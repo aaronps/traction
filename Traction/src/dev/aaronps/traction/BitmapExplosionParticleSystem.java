@@ -12,13 +12,13 @@ public class BitmapExplosionParticleSystem implements ParticleSystem
 	static final int image_w = 512;
 	static final int image_h = 256;
 	static final Rect size_rect = new Rect(0,0,frame_w,frame_h);
-	static final long frame_ms = 1000/16; // ~1.xx seconds, 16 = fps
+	static final float time_per_frame = 1f/20f; // ~1.xx seconds, 16 = fps
 	
 	public static class BitmapExplosionParticle
 	{
 		Rect frame;
 		Rect pos;
-		long f_time;
+		float frame_time;
 		
 		float dir_x;
 		float dir_y;
@@ -29,45 +29,39 @@ public class BitmapExplosionParticleSystem implements ParticleSystem
 			frame = new Rect(size_rect);
 			pos = new Rect(size_rect);
 			
-			f_time = 0;
+			frame_time = 0;
 			dir_x = 0;
 			dir_y = 0;
 			speed = 0;
 		}
 	}
 
-	static int MAX_PARTICLES = 5;
-	static BitmapExplosionParticle[] active_particles = null;
-	static BitmapExplosionParticle[] inactive_particles = null;
-	static int active_particles_count = 0;
-	static int inactive_particles_count = 0;
+	static final int MAX_PARTICLES = 5;
+	static BitmapExplosionParticle[] particles = null;
+	static int particle_count = 0;
 	
 	public BitmapExplosionParticleSystem()
 	{
-		active_particles = new BitmapExplosionParticle[MAX_PARTICLES];
-		inactive_particles = new BitmapExplosionParticle[MAX_PARTICLES];
+		particles = new BitmapExplosionParticle[MAX_PARTICLES];
 		
 		for ( int i = MAX_PARTICLES; i != 0; /* empty */ )
 		{
-			inactive_particles[--i] = new BitmapExplosionParticle();
+			particles[--i] = new BitmapExplosionParticle();
 		}
-		
-		inactive_particles_count = MAX_PARTICLES;
-		
 	}
 	
 	@Override
-	public void logic(final long time)
+	public void logic(final float time)
 	{
-		for ( int i = 0, e = active_particles_count; i < e; /* emtpy */ )
+		for ( int i = 0, e = particle_count; i < e; /* emtpy */ )
 		{
-			final BitmapExplosionParticle p = active_particles[i];
+			final BitmapExplosionParticle p = particles[i];
 			
 			final float fspeed = p.speed * time;
 			p.pos.offset(Math.round(p.dir_x*fspeed), Math.round(p.dir_y * fspeed));
 			
-			p.f_time += time;
-			if ( p.f_time >= frame_ms )
+			p.frame_time += time;
+			if ( p.frame_time >= time_per_frame )
 			{
 				final Rect r = p.frame;
 				r.offset(frame_w, 0);
@@ -76,17 +70,17 @@ public class BitmapExplosionParticleSystem implements ParticleSystem
 					r.offset(-image_w, frame_h);
 					if ( r.top >= image_h )
 					{
-						inactive_particles[inactive_particles_count++] = p;
-						active_particles_count -= 1;
+						particle_count -= 1;
 						e -= 1;
 						if ( i < e )
 						{
-							active_particles[i] = active_particles[e];
+							particles[i] = particles[e];
+							particles[e] = p;
 						}
 						continue;
 					}
 				}
-				p.f_time %= frame_ms;
+				p.frame_time -= time_per_frame;
 			}
 			
 			i++;
@@ -97,25 +91,25 @@ public class BitmapExplosionParticleSystem implements ParticleSystem
 	public void draw(Canvas canvas)
 	{
 		final Bitmap image = GameResources.explosion;
-		for ( int i = active_particles_count; i != 0; /* empty */ )
+		for ( int i = particle_count; i != 0; /* empty */ )
 		{
-			final BitmapExplosionParticle p = active_particles[--i];
+			final BitmapExplosionParticle p = particles[--i];
 			canvas.drawBitmap(image, p.frame, p.pos, null);
 		}
 		
 	}
 
-	public void add(int x, int y, float dir_x, float dir_y)
+	public void add(int x, int y, float dir_x, float dir_y, float speed)
 	{
-		if ( inactive_particles_count > 0 )
+		if ( particle_count < MAX_PARTICLES )
 		{
-			final BitmapExplosionParticle p = inactive_particles[--inactive_particles_count];
-			p.f_time = 0;
+			final BitmapExplosionParticle p = particles[particle_count++];
+			p.frame_time = 0;
 			p.dir_x = dir_x;
 			p.dir_y = dir_y;
+			p.speed = speed;
 			p.frame.offsetTo(0, 0);
 			p.pos.offsetTo(x - frame_w/2, y - frame_h/2);
-			active_particles[active_particles_count++] = p;
 		}
 	}
 

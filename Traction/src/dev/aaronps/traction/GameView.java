@@ -203,9 +203,14 @@ public class GameView extends SurfaceView
 			canvas.drawBitmap( s.image, s.x, s.y, null);
 		}
 		
-		if ( BitmapExplosionParticleSystem.active_particles_count > 0 )
+		if ( BitmapExplosionParticleSystem.particle_count > 0 )
 		{
 			state.explosions.draw(canvas);
+		}
+		
+		if ( SparkParticleSystem.particle_count > 0 )
+		{
+			state.sparks.draw(canvas);
 		}
 		
 		if ( state.topLayerCount > 0 )

@@ -228,7 +228,9 @@ if you have 96 x 96 image in xhdpi then, you need to put
     	final float shield_x = ship.x;
     	final float shield_y = ship.y;
     	
-    	final float combined_radii = 32 + 8; // 32 = shield, 8 = debril
+    	final float shield_radii = 32;
+    	final float debril_radii = 8;
+    	final float combined_radii = shield_radii + debril_radii;
     	
     	final float combined_radii_sq = combined_radii * combined_radii;
     	
@@ -309,6 +311,12 @@ if you have 96 x 96 image in xhdpi then, you need to put
 				
 				final float vec_from_shield_x = (debril.x - shield_x) / combined_radii;
 	            final float vec_from_shield_y = (debril.y - shield_y) / combined_radii;
+	            
+	            // add spark?
+	            
+	            states.draw_state.addSpark( shield_x + vec_from_shield_x * shield_radii,
+	            							shield_y + vec_from_shield_y * shield_radii,
+	            							vec_from_shield_x, vec_from_shield_y, 0);
 	            
 	            // invert previous direction
 	            final float ipdir_x = -prev_debril.dir_x;
@@ -492,7 +500,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
 		    					final float dy = pship.dir_y * pship.dir_y;
 		    					final float sspeed = (float)Math.sqrt(dx + dy);
 		    					
-		    					states.draw_state.addExplosion(ship.x, ship.y, pship.dir_x/sspeed, pship.dir_y/sspeed, sspeed/frame_time/LPS);
+		    					states.draw_state.addExplosion(ship.x, ship.y, pship.dir_x/sspeed, pship.dir_y/sspeed, (float)Math.min(MAX_SPEED/4, sspeed*(LPS/4)));
 		    					view.soundPool.play(view.explosionSoundId, 1.0f, 1.0f, 0, 0, 1.0f);
 		    					st = GameState.EnterDeath;
 		    					pressed = false;

@@ -8,6 +8,7 @@ public class DrawState
 	public int sprite_count;
 
 	BitmapExplosionParticleSystem explosions;
+	SparkParticleSystem sparks;
 	
 	public Sprite[] topLayer;
 	public int topLayerCount;
@@ -25,6 +26,7 @@ public class DrawState
 		}
 		
 		explosions = new BitmapExplosionParticleSystem();
+		sparks = new SparkParticleSystem();
 		
 		topLayerCount = 0;
 		topLayer = new Sprite[5];
@@ -55,11 +57,16 @@ public class DrawState
 		s.y = y;
 	}
 	
-	public void addExplosion(final float x, final float y, final float dir_x, final float dir_y, final float ms_speed)
+	public void addExplosion(final float x, final float y, final float dir_x, final float dir_y, final float speed)
 	{
-		explosions.add(Math.round(x), Math.round(y), dir_x, dir_y);
+		explosions.add(Math.round(x), Math.round(y), dir_x, dir_y, speed);
 //		ExplosionParticle p = new ExplosionParticle(Math.round(x), Math.round(y), dir_x, dir_y, ms_speed);
 //		particles[particle_count++] = p;
+	}
+	
+	public void addSpark(final float x, final float y, final float dir_x, final float dir_y, final float speed)
+	{
+		sparks.addSpark(x, y, dir_x, dir_y);
 	}
 
 }
