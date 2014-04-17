@@ -7,6 +7,7 @@ public class DrawState
 	public Sprite[] sprites;
 	public int sprite_count;
 
+	BackgroundStarsParticleSystem backgroundStars;
 	BitmapExplosionParticleSystem explosions;
 	SparkParticleSystem sparks;
 	
@@ -25,6 +26,7 @@ public class DrawState
 			sprites[n] = new Sprite();
 		}
 		
+		backgroundStars = new BackgroundStarsParticleSystem();
 		explosions = new BitmapExplosionParticleSystem();
 		sparks = new SparkParticleSystem();
 		

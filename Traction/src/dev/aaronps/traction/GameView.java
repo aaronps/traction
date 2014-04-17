@@ -195,6 +195,9 @@ public class GameView extends SurfaceView
 	{
 		canvas.drawColor(Color.BLACK);
 		canvas.setMatrix(viewMatrix);
+		
+		state.backgroundStars.draw(canvas);
+		
 		final Sprite[] sprites = state.sprites;
 		final int count = state.sprite_count;
 		for ( int n = 0; n < count; n++ )

@@ -411,6 +411,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
     				states.resetShip();
 	    			this.calculateNewDirectionsAndSpeeds();
     				st = GameState.ReadyToStart;
+    				BackgroundStarsParticleSystem.slowmo = false;
     				// fall throught
     				
 	    		case ReadyToStart:
@@ -528,6 +529,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
     			 */
 	    		case EnterDeath:
 	    		{
+	    			BackgroundStarsParticleSystem.slowmo = true;
 	    			final Debril[] debrils = states.current.debrils;
 	    			final int e = debrils.length;
 	    			for ( int i = 0; i < e; i++ )

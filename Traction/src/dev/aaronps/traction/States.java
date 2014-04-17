@@ -96,6 +96,7 @@ public class States
 	final void interpolParticles(final long frame_time)
 	{
 		final float ftime = frame_time/1000f;
+		draw_state.backgroundStars.logic(ftime);
 		draw_state.explosions.logic(ftime);
 		draw_state.sparks.logic(ftime);
 		
