@@ -23,7 +23,7 @@ public class ThrustParticleSystem implements ParticleSystem
 		}
 	}
 	
-	static final float MAX_ALIVE = 0.3f;
+	static final float MAX_ALIVE = 0.2f;
 	static final float MIN_ALIVE = 0.1f;
 	static final float RND_ALIVE = MAX_ALIVE - MIN_ALIVE;
 	
@@ -55,8 +55,8 @@ public class ThrustParticleSystem implements ParticleSystem
 		}
 		
 		thrustPaint = new Paint();
-		thrustPaint.setColor(0xff00bbff); //blue
-//		thrustPaint.setColor(0xffffde00); //yellow center
+//		thrustPaint.setColor(0xff00bbff); //blue
+		thrustPaint.setColor(0xffffde00); //yellow center
 	}
 
 	@Override

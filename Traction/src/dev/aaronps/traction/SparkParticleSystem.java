@@ -12,11 +12,13 @@ public class SparkParticleSystem implements ParticleSystem
 		float x, y;
 		float dir_x, dir_y;
 		float speed;
+		float total_alivetime;
 		float alivetime;
 		
 		public SparkParticle()
 		{
 			x = y = dir_x = dir_y = speed = alivetime = 0;
+			total_alivetime = 0;
 		}
 	}
 	
@@ -83,7 +85,10 @@ public class SparkParticleSystem implements ParticleSystem
 		for ( int i = particle_count; i != 0; /* emtpy */ )
 		{
 			final SparkParticle p = particles[--i];
-			canvas.drawPoint(p.x, p.y, sparkPaint);
+			sparkPaint.setAlpha(Math.round(p.alivetime * 255 / p.total_alivetime));
+			final float rad = p.alivetime * 2f / p.total_alivetime;
+			canvas.drawCircle(p.x, p.y, rad, sparkPaint);
+//			canvas.drawPoint(p.x, p.y, sparkPaint);
 		}
 	}
 	
@@ -103,6 +108,7 @@ public class SparkParticleSystem implements ParticleSystem
 				p.y = y;
 				
 				p.alivetime = (rnd.nextFloat() * RND_ALIVE) + MIN_ALIVE;
+				p.total_alivetime = p.alivetime;
 				p.speed = (rnd.nextFloat() * RND_SPEED) + MIN_SPEED;
 			}
 			else
