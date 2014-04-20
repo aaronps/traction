@@ -64,8 +64,12 @@ public class States
 		final float y = (current.ship.y * c_rate + prev.ship.y * p_rate);
 
 		draw_state.add( GameResources.ship,
+//						current.ship.x - GameResources.ship_offset_x,
+//						current.ship.y - GameResources.ship_offset_y);
 						x - GameResources.ship_offset_x,
 						y - GameResources.ship_offset_y);
+		
+		draw_state.thrustParticles.setShipLocation(x,y);
 		
 		if ( current.ship.shield )
 		{
@@ -99,7 +103,7 @@ public class States
 		draw_state.backgroundStars.logic(ftime);
 		draw_state.explosions.logic(ftime);
 		draw_state.sparks.logic(ftime);
-		
+		draw_state.thrustParticles.logic(ftime);
 	}
 
 	final void resetShip()

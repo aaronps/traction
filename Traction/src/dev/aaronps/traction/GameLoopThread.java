@@ -82,9 +82,9 @@ if you have 96 x 96 image in xhdpi then, you need to put
     {
     	// I set 'current' here because later it will be swapped, and these values readed from 'prev'
     	// so by setting them in current. it fucking works.
-    	states.current.ship.dir_x -= dx;
-    	states.current.ship.dir_y -= dy;
-    	states.current.ship.speed = 1f;
+    	states.current.ship.dir_x += dx;
+    	states.current.ship.dir_y += dy;
+    	states.current.ship.speed = 2f;
 //    	states.ship_x -= dx;
 //    	states.ship_y -= dy;
     }
@@ -367,14 +367,15 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	@Override
     public void run()
     {
-//    	long ticksPS = 1000 / FPS;
+		// TODO RUN
+    	final long ticksPS = 1000 / 60;
 //		long sleepTime;
-        long current_time = System.currentTimeMillis();
+    	long last_frame_start = System.currentTimeMillis();
         long accumulator = 0;
         
         int fps_count = 0;
-        long fps_start = fps_count;
-        long last_fps = 0;
+        long fps_count_start_time = last_frame_start;
+        long last_second_fps_count = 0;
         
         GameState st = GameState.Init;
         
@@ -384,25 +385,27 @@ if you have 96 x 96 image in xhdpi then, you need to put
     	while (running)
     	{
     		Canvas c = null;
+    		final long this_frame_start =  System.currentTimeMillis();
     		
-    		final long new_time = System.currentTimeMillis();
-    		final long fps_time = new_time - fps_start;
+    		final long fps_time = this_frame_start - fps_count_start_time;
     		if ( fps_time >= 1000 )
     		{
 //    			    System.out.println("FPS: " + fps_count + " in " + fps_time + " ms");
-    			last_fps = fps_count;
-    			fps_start = new_time;
+    			last_second_fps_count = fps_count;
+    			fps_count_start_time = this_frame_start;
     			fps_count = 0;
     		}
     		
-    		final long frame_time = new_time - current_time;
+    		final long last_frame_time = this_frame_start - last_frame_start;
     		// if ( frame_time > xxx ) frame_time = xxx limit;
-    		current_time = new_time;
+    		last_frame_start = this_frame_start;
 
     		switch ( st )
     		{
     			case Init:
     				st = GameState.EnterStart;
+    				ThrustParticleSystem.active = false;
+    				BackgroundStarsParticleSystem.slowmo = true;
     				configureSize(0, 0);
     				// fall throught
     				
@@ -411,12 +414,11 @@ if you have 96 x 96 image in xhdpi then, you need to put
     				states.resetShip();
 	    			this.calculateNewDirectionsAndSpeeds();
     				st = GameState.ReadyToStart;
-    				BackgroundStarsParticleSystem.slowmo = false;
     				// fall throught
     				
 	    		case ReadyToStart:
 	    		{
-	    			accumulator += frame_time;
+	    			accumulator += last_frame_time;
 	    			
 	    			while ( accumulator >= DELAY_BETWEEN_LOGICS )
 	    			{
@@ -442,10 +444,10 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    			states.interpolDebrils(rat);
 	    			states.interpolShip(rat);
 	    			
-	    			states.interpolParticles(frame_time);
+	    			states.interpolParticles(last_frame_time);
 	    			
 	    			states.draw_state.alive_time = 0;
-	    			states.draw_state.last_fps = last_fps;
+	    			states.draw_state.last_fps = last_second_fps_count;
 	    			states.draw_state.addTop( GameResources.begin_message,
 	    									  -(GameResources.begin_message.getWidth()/2),
 	    									  -(GameResources.begin_message.getHeight()*2));
@@ -458,8 +460,12 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    				// XXX hack to shield always on
 //	    				states.current.ship.shield = true;
 	    				accumulator = 0;
-	    				current_time = System.currentTimeMillis();
-	    				fps_start = current_time;
+//	    				last_frame_start = System.currentTimeMillis(); // XXX why this here, I don't remember, comment it
+	    				fps_count_start_time = System.currentTimeMillis();
+	    				
+	    				BackgroundStarsParticleSystem.slowmo = false;
+	    				ThrustParticleSystem.active = true;
+
 	    			}
 	    			
 	    		}
@@ -467,8 +473,9 @@ if you have 96 x 96 image in xhdpi then, you need to put
     			
 	    		case Game:
 	    		{
-	    			accumulator += frame_time;
+	    			accumulator += last_frame_time;
 	    			
+	    			if ( accumulator >= DELAY_BETWEEN_LOGICS )
 	    			while ( accumulator >= DELAY_BETWEEN_LOGICS )
 	    			{
 	    				states.swapStates();
@@ -510,15 +517,24 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    				
 	    				accumulator -= DELAY_BETWEEN_LOGICS;
 	    			}
+	    			else if ( states.current.ship.speed > 0 )
+	    			{
+//	    				states.swapStates();
+	    				// TODO maybe should check for collision
+	    				shipMoveLogic(states.current.ship, states.current.ship);
+	    			}
+	    			
+//	    			shipMoveLogic(states.prev.ship, states.current.ship);
 	    			
 	    			final float rat = (float)accumulator/DELAY_BETWEEN_LOGICS; 
 	    			states.draw_state.reset();
 	    			states.interpolShip(rat);
+//	    			states.interpolShip(1.0f);
 	    			states.interpolDebrils(rat);
-	    			states.interpolParticles(frame_time);
+	    			states.interpolParticles(last_frame_time);
 	    			
-	    			states.draw_state.alive_time += frame_time;
-	    			states.draw_state.last_fps = last_fps;
+	    			states.draw_state.alive_time += last_frame_time;
+	    			states.draw_state.last_fps = last_second_fps_count;
 	    			
 	    		}
 	    			break;
@@ -529,6 +545,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
     			 */
 	    		case EnterDeath:
 	    		{
+	    			ThrustParticleSystem.active = false;
 	    			BackgroundStarsParticleSystem.slowmo = true;
 	    			final Debril[] debrils = states.current.debrils;
 	    			final int e = debrils.length;
@@ -580,7 +597,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    			// fall through
 	    			
 	    		case Death:
-	    			accumulator += frame_time;
+	    			accumulator += last_frame_time;
 	    			
 	    			while ( accumulator >= DELAY_BETWEEN_LOGICS )
 	    			{
@@ -595,9 +612,9 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    			
 	    			states.draw_state.reset();
 	    			states.interpolDebrils(rat);
-	    			states.interpolParticles(frame_time);
+	    			states.interpolParticles(last_frame_time);
 	    			
-	    			states.draw_state.last_fps = last_fps;
+	    			states.draw_state.last_fps = last_second_fps_count;
 	    			states.draw_state.addTop( GameResources.death_message,
 											  -(GameResources.death_message.getWidth()/2),
 											  -(GameResources.death_message.getHeight()*2));
@@ -611,6 +628,8 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    			break;
     		} // switch
             
+    		final long this_frame_logic_time = System.currentTimeMillis() - this_frame_start;
+    		
     		try
     		{
     			c = view.getHolder().lockCanvas();
@@ -631,16 +650,34 @@ if you have 96 x 96 image in xhdpi then, you need to put
     		}
     		
     		++fps_count;
+    		// TODO RUN END
 
-//            sleepTime = ticksPS-(System.currentTimeMillis() - startTime);
-//            
-//            try
-//            {
-//            	if ( sleepTime > 0 )
-//            		sleep(sleepTime);
+    		final long this_frame_used_time = (System.currentTimeMillis() - this_frame_start);
+    		final long this_frame_draw_time = this_frame_used_time - this_frame_logic_time;
+            final long sleepTime = ticksPS-this_frame_used_time;
+
+            System.out.print("Times: last-used  ");
+            System.out.print(last_frame_time);
+            System.out.print("  now-used  ");
+            System.out.print(this_frame_used_time);
+            System.out.print("  logic  ");
+            System.out.print(this_frame_logic_time);
+            System.out.print("  draw  ");
+            System.out.print(this_frame_draw_time);
+            System.out.print("  tosleep  ");
+            System.out.println(sleepTime);
+            
+            
+            
+            try
+            {
+            	if ( sleepTime > 0 )
+            		sleep(sleepTime);
 //            	else
+//            	{
 //            		sleep(10);
-//            } catch (Exception e) {}
+//            	}
+            } catch (Exception e) {}
 
     	}
     }

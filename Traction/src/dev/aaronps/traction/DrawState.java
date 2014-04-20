@@ -10,6 +10,7 @@ public class DrawState
 	BackgroundStarsParticleSystem backgroundStars;
 	BitmapExplosionParticleSystem explosions;
 	SparkParticleSystem sparks;
+	ThrustParticleSystem thrustParticles;
 	
 	public Sprite[] topLayer;
 	public int topLayerCount;
@@ -29,6 +30,7 @@ public class DrawState
 		backgroundStars = new BackgroundStarsParticleSystem();
 		explosions = new BitmapExplosionParticleSystem();
 		sparks = new SparkParticleSystem();
+		thrustParticles = new ThrustParticleSystem();
 		
 		topLayerCount = 0;
 		topLayer = new Sprite[5];

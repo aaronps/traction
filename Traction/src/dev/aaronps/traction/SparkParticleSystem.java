@@ -45,8 +45,8 @@ public class SparkParticleSystem implements ParticleSystem
 		}
 		
 		sparkPaint = new Paint();
-//		sparkPaint.setColor(0xff00bbff); //blue
-		sparkPaint.setColor(0xffffde00); //yellow center
+		sparkPaint.setColor(0xff00bbff); //blue
+//		sparkPaint.setColor(0xffffde00); //yellow center
 	}
 	
 

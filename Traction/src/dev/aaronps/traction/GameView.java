@@ -166,8 +166,8 @@ public class GameView extends SurfaceView
 	    	{
 	    		final float new_x = e.getX();
 	    		final float new_y = e.getY();
-	    		final float dx = prev_x - new_x;
-	    		final float dy = prev_y - new_y;
+	    		final float dx = new_x - prev_x;
+	    		final float dy = new_y - prev_y;
 	    		
 //	    		System.out.println(String.format("MOVE: from %f,%f to %f,%f diff %f,%f",
 //	    										  prev_x, prev_y, new_x, new_y, dx, dy));
@@ -197,6 +197,7 @@ public class GameView extends SurfaceView
 		canvas.setMatrix(viewMatrix);
 		
 		state.backgroundStars.draw(canvas);
+		state.thrustParticles.draw(canvas);
 		
 		final Sprite[] sprites = state.sprites;
 		final int count = state.sprite_count;
