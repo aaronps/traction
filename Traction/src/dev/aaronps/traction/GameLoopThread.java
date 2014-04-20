@@ -656,16 +656,16 @@ if you have 96 x 96 image in xhdpi then, you need to put
     		final long this_frame_draw_time = this_frame_used_time - this_frame_logic_time;
             final long sleepTime = ticksPS-this_frame_used_time;
 
-            System.out.print("Times: last-used  ");
-            System.out.print(last_frame_time);
-            System.out.print("  now-used  ");
-            System.out.print(this_frame_used_time);
-            System.out.print("  logic  ");
-            System.out.print(this_frame_logic_time);
-            System.out.print("  draw  ");
-            System.out.print(this_frame_draw_time);
-            System.out.print("  tosleep  ");
-            System.out.println(sleepTime);
+//            System.out.print("Times: last-used  ");
+//            System.out.print(last_frame_time);
+//            System.out.print("  now-used  ");
+//            System.out.print(this_frame_used_time);
+//            System.out.print("  logic  ");
+//            System.out.print(this_frame_logic_time);
+//            System.out.print("  draw  ");
+//            System.out.print(this_frame_draw_time);
+//            System.out.print("  tosleep  ");
+//            System.out.println(sleepTime);
             
             
             

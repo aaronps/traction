@@ -13,11 +13,13 @@ public class ThrustParticleSystem implements ParticleSystem
 		float x, y;
 		float dir_x, dir_y;
 		float speed;
+		float total_alivetime;
 		float alivetime;
 		
 		public ThrustParticle()
 		{
 			x = y = dir_x = dir_y = speed = alivetime = 0;
+			total_alivetime = 0;
 		}
 	}
 	
@@ -53,8 +55,8 @@ public class ThrustParticleSystem implements ParticleSystem
 		}
 		
 		thrustPaint = new Paint();
-//		sparkPaint.setColor(0xff00bbff); //blue
-		thrustPaint.setColor(0xffffde00); //yellow center
+		thrustPaint.setColor(0xff00bbff); //blue
+//		thrustPaint.setColor(0xffffde00); //yellow center
 	}
 
 	@Override
@@ -83,6 +85,7 @@ public class ThrustParticleSystem implements ParticleSystem
 					p.x = left_x + ( rnd.nextFloat() * 4) - 2;
 					p.y = left_y;
 					p.alivetime = rnd.nextFloat() * RND_ALIVE + MIN_ALIVE;
+					p.total_alivetime = p.alivetime;
 					p.speed = rnd.nextFloat() * RND_SPEED + MIN_SPEED;
 //					p.dir_y = 1;
 				}
@@ -103,6 +106,7 @@ public class ThrustParticleSystem implements ParticleSystem
 					p.x = right_x + ( rnd.nextFloat() * 4) - 2;
 					p.y = right_y;
 					p.alivetime = rnd.nextFloat() * RND_ALIVE + MIN_ALIVE;
+					p.total_alivetime = p.alivetime;
 					p.speed = rnd.nextFloat() * RND_SPEED + MIN_SPEED;
 //					p.dir_y = 1;
 				}
@@ -143,7 +147,10 @@ public class ThrustParticleSystem implements ParticleSystem
 		for ( int i = particle_count; i != 0; /* emtpy */ )
 		{
 			final ThrustParticle p = particles[--i];
-			canvas.drawPoint(p.x, p.y, thrustPaint);
+			thrustPaint.setAlpha(Math.round(p.alivetime * 255 / p.total_alivetime));
+			final float rad = p.alivetime * 4 / p.total_alivetime;
+			canvas.drawCircle(p.x, p.y, rad, thrustPaint);
+//			canvas.drawPoint(p.x, p.y, thrustPaint);
 		}
 	}
 

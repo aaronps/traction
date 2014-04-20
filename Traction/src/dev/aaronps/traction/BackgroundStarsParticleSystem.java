@@ -28,7 +28,7 @@ public class BackgroundStarsParticleSystem implements ParticleSystem
 	
 	static final float x_size = max_x - min_x;
 	
-	static final float MAX_SPEED= 80f; //30
+	static final float MAX_SPEED= 160f; //30
 	static final float MIN_SPEED = 4f; //4
 	static final float RND_SPEED = MAX_SPEED - MIN_SPEED;
 	
@@ -41,7 +41,7 @@ public class BackgroundStarsParticleSystem implements ParticleSystem
 	static Random rnd = new Random();
 
 	private static final float time_accel_rate = 0.5f;
-	private static final float slowmo_time_rate = 0.2f;
+	private static final float slowmo_time_rate = 0.02f;
 	static boolean slowmo = false;
 	static float time_rate = slowmo_time_rate;
 	
@@ -49,7 +49,7 @@ public class BackgroundStarsParticleSystem implements ParticleSystem
 	public BackgroundStarsParticleSystem()
 	{
 		starPaint = new Paint[3];
-		starPaint[0] = new Paint(); starPaint[0].setColor(0xffaaaaaa);
+		starPaint[0] = new Paint(); starPaint[0].setColor(0xffcccccc);
 		starPaint[1] = new Paint(); starPaint[1].setColor(0xffffffff);
 		starPaint[2] = new Paint(); starPaint[2].setColor(0xffffffff);
 		
