@@ -42,6 +42,7 @@ public class BitmapExplosionParticleSystem implements ParticleSystem
 	
 	public BitmapExplosionParticleSystem()
 	{
+		particle_count = 0;
 		particles = new BitmapExplosionParticle[MAX_PARTICLES];
 		
 		for ( int i = MAX_PARTICLES; i != 0; /* empty */ )

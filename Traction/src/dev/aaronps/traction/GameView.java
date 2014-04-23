@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -104,7 +105,7 @@ public class GameView extends SurfaceView
            @Override
            public void surfaceCreated(SurfaceHolder holder)
            {
-        	   System.out.println("Surface created");
+        	   Log.i("GameView", "Surface created");
         	   gameLoopThread.setRunning(true);
                gameLoopThread.start();
            }
@@ -121,12 +122,13 @@ public class GameView extends SurfaceView
         	   if ( ! configured )
         	   {
         		   viewMatrix.reset();
-        		   viewMatrix.setTranslate(width/2, height/2);
+//        		   viewMatrix.setScale(0.5f, 0.5f);
+        		   viewMatrix.postTranslate(width/2, height/2);
         		   gameLoopThread.configureSize(width, height);
         		   configured = true;
+        		   System.gc();
         	   }
         	   
-        	   System.gc();
            }
         });
 

@@ -2,7 +2,6 @@ package dev.aaronps.traction;
 
 import java.util.Random;
 
-import dev.aaronps.traction.SparkParticleSystem.SparkParticle;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 

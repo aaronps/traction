@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Process;
 
 public class GameLoopThread extends Thread
 {
@@ -37,7 +38,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	 * 
 	 */
 	
-	static final long LPS = 25;
+	static final long LPS = 60;
 	static final long DELAY_BETWEEN_LOGICS = 1000/LPS;
 	static final float ACCEL_PER_SECOND = 25.0f;
 	static final float ACCEL_PER_LOGIC = ACCEL_PER_SECOND / LPS;
@@ -70,23 +71,65 @@ if you have 96 x 96 image in xhdpi then, you need to put
     
     private boolean pressed = false;
     
+    public static class ShipMoveCommand
+    {
+    	public float x;
+    	public float y;
+    	public ShipMoveCommand() { x = y = 0; }
+    }
+    
+    private ShipMoveCommand currentMoveCommand = null;
+    private ShipMoveCommand reserveMoveCommand = null;
+    
+    
     public GameLoopThread(GameView view)
     {
 //    	System.out.println("ACCEL_PER_LOGIC = " + ACCEL_PER_LOGIC);
     	this.view = view;
     	
     	states = new States(num_points);
+    	
+    	currentMoveCommand = new ShipMoveCommand();
+    	reserveMoveCommand = new ShipMoveCommand();
     }
 
+    // TODO this might be called from another thread, so there must be some synchronization
     public void moveShip(final float dx, final float dy)
     {
-    	// I set 'current' here because later it will be swapped, and these values readed from 'prev'
-    	// so by setting them in current. it fucking works.
-    	states.current.ship.dir_x += dx;
-    	states.current.ship.dir_y += dy;
-    	states.current.ship.speed = 2f;
-//    	states.ship_x -= dx;
-//    	states.ship_y -= dy;
+    	synchronized (currentMoveCommand)
+    	{
+    		currentMoveCommand.x += dx;
+    		currentMoveCommand.y += dy;
+		}
+//    	states.current.ship.dir_x += dx;
+//    	states.current.ship.dir_y += dy;
+//    	states.current.ship.speed = 2f;
+    }
+    
+    /**
+     * Swaps the current command with the reserve one and returns it. The
+     * reserve command is reset to zero.
+     *  
+     * @return The current ShipMoveCommand
+     */
+    public ShipMoveCommand getMoveCommand()
+    {
+    	synchronized (currentMoveCommand)
+    	{
+    		final ShipMoveCommand c = currentMoveCommand;
+    		reserveMoveCommand.x = reserveMoveCommand.y = 0;
+    		currentMoveCommand = reserveMoveCommand;
+    		reserveMoveCommand = c;
+    		return c;
+    	}
+    }
+    
+    public void resetMoveCommand()
+    {
+    	synchronized (currentMoveCommand)
+    	{
+    		currentMoveCommand.x = currentMoveCommand.y = 0;
+    	}
     }
     
     public void setRunning(boolean run)
@@ -381,6 +424,10 @@ if you have 96 x 96 image in xhdpi then, you need to put
         
     	shipRect.set(0, 0, GameResources.shipMask.getWidth(), GameResources.shipMask.getHeight());
     	debrilRect.set(0, 0, GameResources.debrilMask.getWidth(), GameResources.debrilMask.getHeight());
+    	
+    	
+    	
+//    	Process.setThreadPriority(NORM_PRIORITY+1);
 
     	while (running)
     	{
@@ -412,6 +459,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
     			case EnterStart:
     				pressed = false;
     				states.resetShip();
+    				// XXX may need to reset ship move command here or later?
 	    			this.calculateNewDirectionsAndSpeeds();
     				st = GameState.ReadyToStart;
     				// fall throught
@@ -457,6 +505,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    				pressed = false;
 	    				st = GameState.Game;
 	    				states.resetShip();
+	    				resetMoveCommand();
 	    				// XXX hack to shield always on
 //	    				states.current.ship.shield = true;
 	    				accumulator = 0;
@@ -474,6 +523,14 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	    		case Game:
 	    		{
 	    			accumulator += last_frame_time;
+	    			
+	    			{
+	    				final ShipMoveCommand smc = getMoveCommand();
+	    				states.current.ship.dir_x = smc.x;
+	    				states.current.ship.dir_y = smc.y;
+	    				states.current.ship.speed = 2f;
+	    			}
+	    			
 	    			
 	    			if ( accumulator >= DELAY_BETWEEN_LOGICS )
 	    			while ( accumulator >= DELAY_BETWEEN_LOGICS )
@@ -666,8 +723,6 @@ if you have 96 x 96 image in xhdpi then, you need to put
 //            System.out.print(this_frame_draw_time);
 //            System.out.print("  tosleep  ");
 //            System.out.println(sleepTime);
-            
-            
             
             try
             {
