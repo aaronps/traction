@@ -1,5 +1,7 @@
 package dev.aaronps.traction;
 
+import java.util.InputMismatchException;
+
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -22,18 +24,9 @@ public class GameLoopThread extends Thread
     private boolean running = false;
     private States states;
     
-    private boolean pressed = false;
-    
-    public static class ShipMoveCommand
-    {
-    	public float x;
-    	public float y;
-    	public ShipMoveCommand() { x = y = 0; }
-    }
-    
-    private ShipMoveCommand currentMoveCommand = null;
-    private ShipMoveCommand reserveMoveCommand = null;
     private GameState logicState = GameState.Init;
+
+    private final InputManager.MoveCommand moveCommand = new InputManager.MoveCommand();
     
     
     public GameLoopThread(GameView view)
@@ -41,50 +34,8 @@ public class GameLoopThread extends Thread
     	this.view = view;
     	
     	states = new States(Config.MAX_DEBRIL_COUNT);
-    	
-    	currentMoveCommand = new ShipMoveCommand();
-    	reserveMoveCommand = new ShipMoveCommand();
     }
 
-    // TODO this might be called from another thread, so there must be some synchronization
-    public void moveShip(final float dx, final float dy)
-    {
-    	synchronized (currentMoveCommand)
-    	{
-    		currentMoveCommand.x += dx;
-    		currentMoveCommand.y += dy;
-		}
-//    	states.current.ship.dir_x += dx;
-//    	states.current.ship.dir_y += dy;
-//    	states.current.ship.speed = 2f;
-    }
-    
-    /**
-     * Swaps the current command with the reserve one and returns it. The
-     * reserve command is reset to zero.
-     *  
-     * @return The current ShipMoveCommand
-     */
-    public ShipMoveCommand getMoveCommand()
-    {
-    	synchronized (currentMoveCommand)
-    	{
-    		final ShipMoveCommand c = currentMoveCommand;
-    		reserveMoveCommand.x = reserveMoveCommand.y = 0;
-    		currentMoveCommand = reserveMoveCommand;
-    		reserveMoveCommand = c;
-    		return c;
-    	}
-    }
-    
-    public void resetMoveCommand()
-    {
-    	synchronized (currentMoveCommand)
-    	{
-    		currentMoveCommand.x = currentMoveCommand.y = 0;
-    	}
-    }
-    
     public void setRunning(boolean run)
     {
     	running = run;
@@ -393,7 +344,7 @@ public class GameLoopThread extends Thread
                 // fall through
                 
             case EnterStart:
-                pressed = false;
+                InputManager.resetPress();
                 states.resetShip();
                 // XXX may need to reset ship move command here or later?
                 this.calculateNewDirectionsAndSpeeds();
@@ -416,12 +367,12 @@ public class GameLoopThread extends Thread
                 debrilMoveLogic(states.prev.debrils, states.current.debrils);
                 shieldCollisionLogic(states.current.ship, states.current.debrils, states.prev.debrils);
                 
-                if ( pressed )
+                if ( InputManager.wasPressed() )
                 {
-                    pressed = false;
+                    InputManager.resetPress();
                     logicState = GameState.Game;
                     states.resetShip();
-                    resetMoveCommand();
+                    InputManager.resetPress();
                     // XXX hack to shield always on
 //                  states.current.ship.shield = true;
 
@@ -435,10 +386,10 @@ public class GameLoopThread extends Thread
             case Game:
             {
                 {
-                    final ShipMoveCommand smc = getMoveCommand();
-                    states.current.ship.dir_x = smc.x;
-                    states.current.ship.dir_y = smc.y;
-                    states.current.ship.speed = 1.2f;
+                    InputManager.getMoveCommand( moveCommand );
+                    states.current.ship.dir_x = moveCommand.dir_x;
+                    states.current.ship.dir_y = moveCommand.dir_y;
+                    states.current.ship.speed = moveCommand.speed;
                 }
                 
                 
@@ -474,7 +425,7 @@ public class GameLoopThread extends Thread
                     states.draw_state.addExplosion(ship.x, ship.y, pship.dir_x/sspeed, pship.dir_y/sspeed, (float)Math.min(Config.MAX_SPEED/4, sspeed*(Config.LPS/4)));
                     view.soundPool.play(view.explosionSoundId, 1.0f, 1.0f, 0, 0, 1.0f);
                     logicState = GameState.EnterDeath;
-                    pressed = false;
+                    InputManager.resetPress();
                 }
             }
                 break;
@@ -542,7 +493,7 @@ public class GameLoopThread extends Thread
                 debrilMoveLogic(states.prev.debrils, states.current.debrils);
                 
 //              if ( st == GameState.Death && pressed )
-                if ( pressed )
+                if ( InputManager.wasPressed() )
                 {
                     logicState = GameState.EnterStart;
                 }
@@ -657,11 +608,6 @@ public class GameLoopThread extends Thread
     	
     	states.copyCurrentToPrev();
 		
-	}
-
-	public void onDown(float prev_x, float prev_y)
-	{
-		pressed = true;
 	}
 
 }

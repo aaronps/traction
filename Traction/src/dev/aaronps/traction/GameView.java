@@ -49,9 +49,6 @@ public class GameView extends SurfaceView
     private int surf_width = 0;
     private int surf_height = 0;
     
-    float x_ratio;
-    
-    
 	public GameView(Context context)
 	{
 		super(context);
@@ -127,10 +124,10 @@ public class GameView extends SurfaceView
 //        		   final float screen_ratio = height / (float)width;
         		   
         		   final float desired_x = 480f;
-        		   x_ratio = width / desired_x;
+        		   final float x_ratio = width / desired_x;
         		   
-        		   
-        		   
+        		   Config.screen_x_ratio = x_ratio;
+        		   Config.screen_y_ratio = x_ratio;
         		   
         		   viewMatrix.setScale( x_ratio, x_ratio);
         		   viewMatrix.postTranslate(width/2, height/2);
@@ -153,51 +150,20 @@ public class GameView extends SurfaceView
 
 	}
 	
-	boolean pressing = false;
-	float prev_x = 0;
-	float prev_y = 0;
+//	boolean pressing = false;
+//	float prev_x = 0;
+//	float prev_y = 0;
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent e)
 	{
-//		float eventX = event.getX();
-//	    float eventY = event.getY();
-
 	    switch (e.getAction())
 	    {
-	    	case MotionEvent.ACTION_DOWN:
-		    	prev_x = e.getX();
-				prev_y = e.getY();
-				
-				gameLoopThread.onDown(prev_x, prev_y);
-				
-//				System.out.println(String.format("START: %f,%f", prev_x, prev_y));
-				return true;
-	    	
-	    	case MotionEvent.ACTION_MOVE:
-	    	{
-	    		final float new_x = e.getX();
-	    		final float new_y = e.getY();
-	    		final float dx = new_x - prev_x;
-	    		final float dy = new_y - prev_y;
+	    	case MotionEvent.ACTION_DOWN: InputManager.pointerPress( e.getX(), e.getY() );   break;
+	    	case MotionEvent.ACTION_MOVE: InputManager.pointerMove( e.getX(), e.getY() );    break;
+	    	case MotionEvent.ACTION_UP:   InputManager.pointerRelease( e.getX(), e.getY() ); break;
 	    		
-//	    		System.out.println(String.format("MOVE: from %f,%f to %f,%f diff %f,%f",
-//	    										  prev_x, prev_y, new_x, new_y, dx, dy));
-
-	    		gameLoopThread.moveShip(dx/x_ratio, dy/x_ratio);
-
-	    		prev_x = new_x;
-	    		prev_y = new_y;
-	    		
-	    	}
-    			break;
-	    
-	    	case MotionEvent.ACTION_UP:
-//	    		System.out.println(String.format("END: %f,%f", e.getX(), e.getY()));
-	    		break;
-	    		
-	    	default:
-	    		return false;
+	    	default: return false;
 	    }
 
 		return true;
@@ -241,8 +207,6 @@ public class GameView extends SurfaceView
 		}
 		
 		canvas.setMatrix(identityMatrix);
-		
-		// TODO these two lines makes garbage to be collected, need to remove them
 		
 		{
 			final int[] decimals = static_decimals;

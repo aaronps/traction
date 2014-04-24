@@ -58,6 +58,13 @@ public class Config
     public static final float COMBINED_RADII = SHIELD_RADII + DEBRIL_RADII;
     public static final float COMBINED_RADII_SQ = COMBINED_RADII * COMBINED_RADII;
     
+    public static final float POINTER_MOVE_RATIO    = 1.2f;
     
+    public static final float JOYSTICK_MIN_DISTANCE = 10.0f;
+    public static final float JOYSTICK_MAX_DISTANCE = 100.0f;
+    public static final float JOYSTICK_MAX_SPEED    = 5.0f;
+    
+    public static float screen_x_ratio = 1f;
+    public static float screen_y_ratio = 1f;
     
 }
