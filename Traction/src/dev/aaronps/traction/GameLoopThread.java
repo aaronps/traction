@@ -369,10 +369,8 @@ public class GameLoopThread extends Thread
                 
                 if ( InputManager.wasPressed() )
                 {
-                    InputManager.resetPress();
                     logicState = GameState.Game;
                     states.resetShip();
-                    InputManager.resetPress();
                     // XXX hack to shield always on
 //                  states.current.ship.shield = true;
 
@@ -392,6 +390,7 @@ public class GameLoopThread extends Thread
                     states.current.ship.speed = moveCommand.speed;
                 }
                 
+                ThrustParticleSystem.active = InputManager.wasPressed() || BackgroundStarsParticleSystem.time_rate < 1.0f ;
                 
                 states.swapStates();
                 
