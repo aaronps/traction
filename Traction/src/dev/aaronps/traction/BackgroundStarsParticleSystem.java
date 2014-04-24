@@ -9,12 +9,13 @@ import android.graphics.Paint.Cap;
 public class BackgroundStarsParticleSystem implements ParticleSystem
 {
 	static final float min_x = -350f;
-	static final float min_y = -350f;
+	static final float min_y = -450f;
 
 	static final float max_x = 350f;
-	static final float max_y = 350f;
+	static final float max_y = 450f;
 	
 	static final float x_size = max_x - min_x;
+	static final float y_size = max_y - min_y;
 	
 	static final float MAX_SPEED= 160f; //30
 	static final float MIN_SPEED = 4f; //4
@@ -49,7 +50,7 @@ public class BackgroundStarsParticleSystem implements ParticleSystem
 		for ( int i = 0, ixy = 0; i < MAX_PARTICLES; i++ )
 		{
 			ppoints[ixy++] = (rnd.nextFloat() * x_size) - x_size / 2;  
-			ppoints[ixy++] = (rnd.nextFloat() * x_size) - x_size / 2;
+			ppoints[ixy++] = (rnd.nextFloat() * y_size) - y_size / 2;
 			pspeeds[i] = rnd.nextFloat() * RND_SPEED + MIN_SPEED;
 		}
 		

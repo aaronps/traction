@@ -8,52 +8,6 @@ import android.os.Process;
 
 public class GameLoopThread extends Thread
 {
-	/*
-	 * Notes about logic fps:
-	 * 
-	 * Each second, times per second which are rounded numbers:
-	 * 1000/50 = 20ms between
-	 * 1000/40 = 25ms between
-	 * 1000/25 = 40ms between
-	 * 1000/20 = 50ms between
-	 * 1000/10 = 100ms between
-	 * 1000/8  = 125ms between
-	 * 
-	 * rest are to small to take into account
-	 * 
-	 * Notes about sizes (from stackoverflow):
-xhdpi = 100% image
-hdpi = 75% image of xhdpi image
-mdpi = 50% image of xhdpi image
-ldpi = 50% image of hdpi image
-i.e :
-
-if you have 96 x 96 image in xhdpi then, you need to put
-
-72 x 72 in hdpi folder - ( 75 % of xhdpi )
-48 x 48 in mdpi folder - ( 50 % of xhdpi )
-36 x 36 in ldpi folder - ( 50 % of hdpi )
-	 * 
-	 * 
-	 * 
-	 */
-	
-	static final long LPS = 60;
-	static final long DELAY_BETWEEN_LOGICS = 1000/LPS;
-	static final float ACCEL_PER_SECOND = 25.0f;
-	static final float ACCEL_PER_LOGIC = ACCEL_PER_SECOND / LPS;
-	static final float MAX_SPEED = 240f;
-	static final float MAX_SPEED_LOGIC = MAX_SPEED / LPS;
-	static final float REDUCED_SPEED = 15f;
-	static final float REDUCED_SPEED_LOGIC = REDUCED_SPEED / LPS;
-	
-	static final float min_x = -350f;
-	static final float min_y = -350f;
-
-	static final float max_x = 350f;
-	static final float max_y = 350f;
-	
-	static final RectF SMOVE_AREA = new RectF(min_x + 50, min_y + 50, max_x - 50, max_y - 50);
 	
 	private static enum GameState
 	{
@@ -67,7 +21,6 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	private GameView view;
     private boolean running = false;
     private States states;
-    private int num_points = 30;
     
     private boolean pressed = false;
     
@@ -80,14 +33,14 @@ if you have 96 x 96 image in xhdpi then, you need to put
     
     private ShipMoveCommand currentMoveCommand = null;
     private ShipMoveCommand reserveMoveCommand = null;
+    private GameState logicState = GameState.Init;
     
     
     public GameLoopThread(GameView view)
     {
-//    	System.out.println("ACCEL_PER_LOGIC = " + ACCEL_PER_LOGIC);
     	this.view = view;
     	
-    	states = new States(num_points);
+    	states = new States(Config.MAX_DEBRIL_COUNT);
     	
     	currentMoveCommand = new ShipMoveCommand();
     	reserveMoveCommand = new ShipMoveCommand();
@@ -142,11 +95,11 @@ if you have 96 x 96 image in xhdpi then, you need to put
     	ship.x = pship.x + pship.dir_x * pship.speed;
 		ship.y = pship.y + pship.dir_y * pship.speed;
 		
-		if ( ship.x < SMOVE_AREA.left ) { ship.x = SMOVE_AREA.left; }
-		else if ( ship.x > SMOVE_AREA.right) { ship.x = SMOVE_AREA.right; }
+		     if ( ship.x < Config.SHIP_MOVE_AREA.left ) { ship.x = Config.SHIP_MOVE_AREA.left; }
+		else if ( ship.x > Config.SHIP_MOVE_AREA.right) { ship.x = Config.SHIP_MOVE_AREA.right; }
 		
-		if ( ship.y < SMOVE_AREA.top) { ship.y = SMOVE_AREA.top; }
-		else if ( ship.y > SMOVE_AREA.bottom) { ship.y = SMOVE_AREA.bottom; }
+		     if ( ship.y < Config.SHIP_MOVE_AREA.top) { ship.y = Config.SHIP_MOVE_AREA.top; }
+		else if ( ship.y > Config.SHIP_MOVE_AREA.bottom) { ship.y = Config.SHIP_MOVE_AREA.bottom; }
 		
 		ship.dir_x = ship.dir_y = ship.speed = 0;
     }
@@ -159,16 +112,6 @@ if you have 96 x 96 image in xhdpi then, you need to put
 			final Debril prev = prev_array[n];
 			final Debril cur = cur_array[n];
 			
-//			cur.x = prev.x;
-//			cur.y = prev.y;
-//			cur.dir_x = prev.dir_x;
-//			cur.dir_y = prev.dir_y;
-//			cur.speed = prev.speed;
-//			
-//			cur.max_speed = prev.max_speed;
-//			cur.min_speed = prev.min_speed;
-//			cur.acceleration = prev.acceleration;
-//			
 			cur.max_speed = prev.max_speed;
 			cur.min_speed = prev.min_speed;
 
@@ -207,9 +150,8 @@ if you have 96 x 96 image in xhdpi then, you need to put
 			final float half_accel = prev.acceleration / 2;
 			
 			cur.x = prev.x + prev.dir_x * prev.speed + prev.dir_x * half_accel;
-			
-			if ( (cur.x <= min_x && prev.dir_x < 0)
-				|| (cur.x >= max_x && prev.dir_x > 0) )
+			if (   (cur.x <= Config.WORLD_MIN_X && prev.dir_x < 0)
+				|| (cur.x >= Config.WORLD_MAX_X && prev.dir_x > 0) )
 			{
 				cur.dir_x = -prev.dir_x;
 			}
@@ -219,8 +161,8 @@ if you have 96 x 96 image in xhdpi then, you need to put
 			}
 			
 			cur.y = prev.y + prev.dir_y * prev.speed + prev.dir_y * half_accel;
-			if ( (cur.y <= min_y && prev.dir_y < 0) 
-				|| (cur.y >= max_y && prev.dir_y > 0) )
+			if (   (cur.y <= Config.WORLD_MIN_Y && prev.dir_y < 0) 
+				|| (cur.y >= Config.WORLD_MAX_Y && prev.dir_y > 0) )
 			{
 				cur.dir_y = -prev.dir_y;
 			}
@@ -242,7 +184,6 @@ if you have 96 x 96 image in xhdpi then, you need to put
 		final int e = debrils.length;
 		for ( int n = 0; n < e; n++ )
 		{
-//			final Debril prev = prev.debrils[n];
 			final Debril cur = debrils[n];
 			
 			debril_rect.offsetTo((int)cur.x - GameResources.debril_offset_x, (int)cur.y - GameResources.debril_offset_y);
@@ -271,12 +212,6 @@ if you have 96 x 96 image in xhdpi then, you need to put
     	final float shield_x = ship.x;
     	final float shield_y = ship.y;
     	
-    	final float shield_radii = 32;
-    	final float debril_radii = 8;
-    	final float combined_radii = shield_radii + debril_radii;
-    	
-    	final float combined_radii_sq = combined_radii * combined_radii;
-    	
     	final int e = debrils.length;
 		for ( int n = 0; n < e; n++ )
 		{
@@ -284,25 +219,8 @@ if you have 96 x 96 image in xhdpi then, you need to put
 			final float shield_debril_dist_x = shield_x - debril.x;
 			final float shield_debril_dist_y = shield_y - debril.y;
 			final float shield_debril_dist_sq = shield_debril_dist_x * shield_debril_dist_x + shield_debril_dist_y * shield_debril_dist_y;
-			/*
-			 * We can do like this because the current parameters for speed
-			 * doesn't allow a ball to cross over the shield without intersecting
-			 * with it in one of the loop, max is 1000, this is because:
-			 * radius of shield = 32
-			 * radius of ball = 8
-			 * combined radius = 40
-			 * logic calculations per second = 25
-			 * max speed of balls tested = 300
-			 * 
-			 * so, each logic the ball will move at most 300/25 = 12 which is
-			 * less than the combine radius. for this, 1000/25 = 40 which is 
-			 * the combined radius.
-			 * 
-			 * SO, the move speed must be less than 1000 per second or collision
-			 * may fail (it might not and 1000 be the limit, but better safe)
-			 * 
-			 */
-			if ( shield_debril_dist_sq <= combined_radii_sq ) 
+
+			if ( shield_debril_dist_sq <= Config.COMBINED_RADII_SQ ) 
 			{
 				final Debril prev_debril = prev_debrils[n];
 				
@@ -319,8 +237,8 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	                from_shield_to_debril_x /= fstd;
 	                from_shield_to_debril_y /= fstd;
 	                
-	                final float nx = shield_x + from_shield_to_debril_x * combined_radii;
-	                final float ny = shield_y + from_shield_to_debril_y * combined_radii;
+	                final float nx = shield_x + from_shield_to_debril_x * Config.COMBINED_RADII;
+	                final float ny = shield_y + from_shield_to_debril_y * Config.COMBINED_RADII;
 
 	                debril.x = nx;
 	                debril.y = ny;
@@ -328,7 +246,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	                debril.dir_y = from_shield_to_debril_y;
 	                
 	                ship.shield_active = true;
-					ship.shield_counter = Math.round(LPS)/2;
+					ship.shield_counter = Math.round(Config.LPS)/2;
 	                view.soundPool.play(view.shieldHitSoundId, 0.8f, 0.8f, 0, 0, 1.0f);
 
 					continue;
@@ -336,7 +254,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
 				
 				final float C_len = (float)Math.sqrt(C_x*C_x + C_y*C_y);
 				final float F = (C_len*C_len) - (D_col*D_col);
-				final float T = combined_radii_sq - F;
+				final float T = Config.COMBINED_RADII_SQ - F;
 				
 				// if T < 0 no col
 				
@@ -352,13 +270,11 @@ if you have 96 x 96 image in xhdpi then, you need to put
 				debril.x = prev_debril.x + prev_debril.dir_x * Travel_dist;
 				debril.y = prev_debril.y + prev_debril.dir_y * Travel_dist;
 				
-				final float vec_from_shield_x = (debril.x - shield_x) / combined_radii;
-	            final float vec_from_shield_y = (debril.y - shield_y) / combined_radii;
+				final float vec_from_shield_x = (debril.x - shield_x) / Config.COMBINED_RADII;
+	            final float vec_from_shield_y = (debril.y - shield_y) / Config.COMBINED_RADII;
 	            
-	            // add spark?
-	            
-	            states.draw_state.addSpark( shield_x + vec_from_shield_x * shield_radii,
-	            							shield_y + vec_from_shield_y * shield_radii,
+	            states.draw_state.addSpark( shield_x + vec_from_shield_x * Config.SHIELD_RADII,
+	            							shield_y + vec_from_shield_y * Config.SHIELD_RADII,
 	            							vec_from_shield_x, vec_from_shield_y, 0);
 	            
 	            // invert previous direction
@@ -375,10 +291,10 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	            debril.dir_x = ndir_x;
 	            debril.dir_y = ndir_y;
 	            
-				debril.speed += GameLoopThread.ACCEL_PER_LOGIC * 2;
-				if ( debril.speed > GameLoopThread.MAX_SPEED_LOGIC )
+				debril.speed += Config.ACCEL_PER_LOGIC * 2;
+				if ( debril.speed > Config.MAX_SPEED_LOGIC )
 				{
-					debril.speed = GameLoopThread.MAX_SPEED_LOGIC;
+					debril.speed = Config.MAX_SPEED_LOGIC;
 				}
 				
 				
@@ -398,7 +314,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
 				}
 				
 				ship.shield_active = true;
-				ship.shield_counter = Math.round(LPS)/2;
+				ship.shield_counter = Math.round(Config.LPS)/2;
 				
 				view.soundPool.play(view.shieldHitSoundId, 0.8f, 0.8f, 0, 0, 1.0f);
 			}
@@ -410,292 +326,47 @@ if you have 96 x 96 image in xhdpi then, you need to put
 	@Override
     public void run()
     {
-		// TODO RUN
-    	final long ticksPS = 1000 / 60;
-//		long sleepTime;
-    	long last_frame_start = System.currentTimeMillis();
-        long accumulator = 0;
-        
         int fps_count = 0;
-        long fps_count_start_time = last_frame_start;
+        long fps_count_start_time = System.currentTimeMillis();
         long last_second_fps_count = 0;
-        
-        GameState st = GameState.Init;
         
     	shipRect.set(0, 0, GameResources.shipMask.getWidth(), GameResources.shipMask.getHeight());
     	debrilRect.set(0, 0, GameResources.debrilMask.getWidth(), GameResources.debrilMask.getHeight());
     	
-    	
-    	
-//    	Process.setThreadPriority(NORM_PRIORITY+1);
-
     	while (running)
     	{
-    		Canvas c = null;
-    		final long this_frame_start =  System.currentTimeMillis();
-    		
-    		final long fps_time = this_frame_start - fps_count_start_time;
-    		if ( fps_time >= 1000 )
-    		{
-//    			    System.out.println("FPS: " + fps_count + " in " + fps_time + " ms");
-    			last_second_fps_count = fps_count;
-    			fps_count_start_time = this_frame_start;
-    			fps_count = 0;
-    		}
-    		
-    		final long last_frame_time = this_frame_start - last_frame_start;
-    		// if ( frame_time > xxx ) frame_time = xxx limit;
-    		last_frame_start = this_frame_start;
-
-    		switch ( st )
-    		{
-    			case Init:
-    				st = GameState.EnterStart;
-    				ThrustParticleSystem.active = false;
-    				BackgroundStarsParticleSystem.slowmo = true;
-    				configureSize(0, 0);
-    				// fall throught
-    				
-    			case EnterStart:
-    				pressed = false;
-    				states.resetShip();
-    				// XXX may need to reset ship move command here or later?
-	    			this.calculateNewDirectionsAndSpeeds();
-    				st = GameState.ReadyToStart;
-    				// fall throught
-    				
-	    		case ReadyToStart:
-	    		{
-	    			accumulator += last_frame_time;
-	    			
-	    			while ( accumulator >= DELAY_BETWEEN_LOGICS )
-	    			{
-	    				states.swapStates();
-	    				
-	    				// force shield
-	    				states.current.ship.shield = true;
-	    				if ( states.prev.ship.shield_active )
-	    				{
-	    					states.current.ship.shield_counter = states.prev.ship.shield_counter - 1;
-	    					states.current.ship.shield_active = states.current.ship.shield_counter > 0;
-	    				}
-	    				else states.current.ship.shield_active = false;
-	    				
-	    				debrilMoveLogic(states.prev.debrils, states.current.debrils);
-	    				shieldCollisionLogic(states.current.ship, states.current.debrils, states.prev.debrils);
-	    				
-	    				accumulator -= DELAY_BETWEEN_LOGICS;
-	    			}
-	    			
-	    			final float rat = (float)accumulator/DELAY_BETWEEN_LOGICS; 
-	    			states.draw_state.reset();
-	    			states.interpolDebrils(rat);
-	    			states.interpolShip(rat);
-	    			
-	    			states.interpolParticles(last_frame_time);
-	    			
-	    			states.draw_state.alive_time = 0;
-	    			states.draw_state.last_fps = last_second_fps_count;
-	    			states.draw_state.addTop( GameResources.begin_message,
-	    									  -(GameResources.begin_message.getWidth()/2),
-	    									  -(GameResources.begin_message.getHeight()*2));
-	
-	    			if ( pressed )
-	    			{
-	    				pressed = false;
-	    				st = GameState.Game;
-	    				states.resetShip();
-	    				resetMoveCommand();
-	    				// XXX hack to shield always on
-//	    				states.current.ship.shield = true;
-	    				accumulator = 0;
-//	    				last_frame_start = System.currentTimeMillis(); // XXX why this here, I don't remember, comment it
-	    				fps_count_start_time = System.currentTimeMillis();
-	    				
-	    				BackgroundStarsParticleSystem.slowmo = false;
-	    				ThrustParticleSystem.active = true;
-
-	    			}
-	    			
-	    		}
-    				break;
-    			
-	    		case Game:
-	    		{
-	    			accumulator += last_frame_time;
-	    			
-	    			{
-	    				final ShipMoveCommand smc = getMoveCommand();
-	    				states.current.ship.dir_x = smc.x;
-	    				states.current.ship.dir_y = smc.y;
-	    				states.current.ship.speed = 2f;
-	    			}
-	    			
-	    			
-	    			if ( accumulator >= DELAY_BETWEEN_LOGICS )
-	    			while ( accumulator >= DELAY_BETWEEN_LOGICS )
-	    			{
-	    				states.swapStates();
-	    				
-	    				final Ship ship = states.current.ship;
-	    				
-	    				ship.shield = states.prev.ship.shield;
-	    				
-	    				if ( states.prev.ship.shield_active )
-	    				{
-	    					ship.shield_counter = states.prev.ship.shield_counter - 1;
-	    					ship.shield_active = ship.shield_counter > 0;
-	    				}
-	    				else ship.shield_active = false;
-	    				
-	    				shipMoveLogic(states.prev.ship, ship);
-	
-	    				debrilMoveLogic(states.prev.debrils, states.current.debrils);
-	    				
-	    				if ( ship.shield )
-	    				{
-	    					shieldCollisionLogic(ship, states.current.debrils, states.prev.debrils);
-	    				}
-//	    				else // enable "else" if ship explodes with shield (better find the logic error)
-	    				{
-		    				if ( shipCollisionLogic(ship, states.current.debrils) )
-		    				{
-		    					final Ship pship = states.prev.ship;
-		    					final float dx = pship.dir_x * pship.dir_x;
-		    					final float dy = pship.dir_y * pship.dir_y;
-		    					final float sspeed = (float)Math.sqrt(dx + dy);
-		    					
-		    					states.draw_state.addExplosion(ship.x, ship.y, pship.dir_x/sspeed, pship.dir_y/sspeed, (float)Math.min(MAX_SPEED/4, sspeed*(LPS/4)));
-		    					view.soundPool.play(view.explosionSoundId, 1.0f, 1.0f, 0, 0, 1.0f);
-		    					st = GameState.EnterDeath;
-		    					pressed = false;
-		    				}
-	    				}
-	    				
-	    				accumulator -= DELAY_BETWEEN_LOGICS;
-	    			}
-	    			else if ( states.current.ship.speed > 0 )
-	    			{
-//	    				states.swapStates();
-	    				// TODO maybe should check for collision
-	    				shipMoveLogic(states.current.ship, states.current.ship);
-	    			}
-	    			
-//	    			shipMoveLogic(states.prev.ship, states.current.ship);
-	    			
-	    			final float rat = (float)accumulator/DELAY_BETWEEN_LOGICS; 
-	    			states.draw_state.reset();
-	    			states.interpolShip(rat);
-//	    			states.interpolShip(1.0f);
-	    			states.interpolDebrils(rat);
-	    			states.interpolParticles(last_frame_time);
-	    			
-	    			states.draw_state.alive_time += last_frame_time;
-	    			states.draw_state.last_fps = last_second_fps_count;
-	    			
-	    		}
-	    			break;
-    			
-    			/*
-    			 * Sets all debrils speed limits and acceleration so they
-    			 * reduce to the minimum.
-    			 */
-	    		case EnterDeath:
-	    		{
-	    			ThrustParticleSystem.active = false;
-	    			BackgroundStarsParticleSystem.slowmo = true;
-	    			final Debril[] debrils = states.current.debrils;
-	    			final int e = debrils.length;
-	    			for ( int i = 0; i < e; i++ )
-	    			{
-	    				debrils[i].max_speed = REDUCED_SPEED_LOGIC;
-	    				debrils[i].min_speed = REDUCED_SPEED_LOGIC;
-	    				if ( debrils[i].speed > debrils[i].max_speed )
-	    	    		{
-	    					debrils[i].acceleration = -ACCEL_PER_LOGIC/4;
-	    	    		}
-	    	    		else if ( debrils[i].speed < debrils[i].min_speed )
-	    	    		{
-	    	    			debrils[i].acceleration = ACCEL_PER_LOGIC/4;
-	    	    		}
-	    	    		else
-	    	    		{
-	    	    			debrils[i].acceleration = 0;
-	    	    		}
-	    			}
-	    			
-	    			st = GameState.ReducingDeath;
-	    		}	
-	    			// fall through
-	    		
-	    		/*
-	    		 * This waited until all the debrils were at the minimum speed
-	    		 * TODO this could be removed, currently unwanted
-	    		 */
-	    		case ReducingDeath:
-	    		{
-    				boolean reduced = false;
-	    			final Debril[] debrils = states.current.debrils;
-	    			final int e = debrils.length;
-	    			for ( int i = 0; i < e; i++ )
-	    			{
-	    				if ( debrils[i].acceleration != 0 )
-	    				{
-	    					reduced = true;
-	    					break;
-	    				}
-	    			}
-	    			
-	    			if ( ! reduced )
-	    			{
-	    				st = GameState.Death;
-	    			}
-	    		}
-	    			// fall through
-	    			
-	    		case Death:
-	    			accumulator += last_frame_time;
-	    			
-	    			while ( accumulator >= DELAY_BETWEEN_LOGICS )
-	    			{
-	    				states.swapStates();
-	    				
-	    				debrilMoveLogic(states.prev.debrils, states.current.debrils);
-	    				
-	    				accumulator -= DELAY_BETWEEN_LOGICS;
-	    			}
-	    			
-	    			final float rat = (float)accumulator/DELAY_BETWEEN_LOGICS; 
-	    			
-	    			states.draw_state.reset();
-	    			states.interpolDebrils(rat);
-	    			states.interpolParticles(last_frame_time);
-	    			
-	    			states.draw_state.last_fps = last_second_fps_count;
-	    			states.draw_state.addTop( GameResources.death_message,
-											  -(GameResources.death_message.getWidth()/2),
-											  -(GameResources.death_message.getHeight()*2));
-	
-//	    			if ( st == GameState.Death && pressed )
-    				if ( pressed )
-	    			{
-	    				st = GameState.EnterStart;
-	    			}
-	    			
-	    			break;
-    		} // switch
-            
-    		final long this_frame_logic_time = System.currentTimeMillis() - this_frame_start;
-    		
+    	    Canvas c = null;
     		try
     		{
-    			c = view.getHolder().lockCanvas();
-    			if ( c != null )
-    			{
-    				synchronized (view.getHolder())
-    				{
-    					view.drawState(c, states.draw_state);
-    				}
+    		    c = view.getHolder().lockCanvas();
+    		    if ( c != null )
+    		    {
+//    		        synchronized (view.getHolder())
+//    		        {
+            		final long this_frame_start =  System.currentTimeMillis();
+            		
+            		final long fps_time = this_frame_start - fps_count_start_time;
+            		if ( fps_time >= 1000 )
+            		{
+            			last_second_fps_count = fps_count;
+            			fps_count_start_time = this_frame_start;
+            			fps_count = 0;
+            		}
+            		
+//            		final long last_frame_time = this_frame_start - last_frame_start;
+//            		accumulator += last_frame_time;
+//            		doLogic( (int)(accumulator / DELAY_BETWEEN_LOGICS) );
+//            		accumulator %= DELAY_BETWEEN_LOGICS;
+//            		interpol( accumulator/(float)DELAY_BETWEEN_LOGICS, last_frame_time );
+            		
+            		doLogic();
+            		interpol( 1.0f, Config.DELAY_BETWEEN_LOGICS );
+            		
+                    states.draw_state.last_fps = last_second_fps_count;
+            		
+					view.drawState(c, states.draw_state);
+//    				} // synchronized()
+					++fps_count;
     			}
     		}
     		finally
@@ -706,36 +377,220 @@ if you have 96 x 96 image in xhdpi then, you need to put
     			}
     		}
     		
-    		++fps_count;
-    		// TODO RUN END
-
-    		final long this_frame_used_time = (System.currentTimeMillis() - this_frame_start);
-    		final long this_frame_draw_time = this_frame_used_time - this_frame_logic_time;
-            final long sleepTime = ticksPS-this_frame_used_time;
-
-//            System.out.print("Times: last-used  ");
-//            System.out.print(last_frame_time);
-//            System.out.print("  now-used  ");
-//            System.out.print(this_frame_used_time);
-//            System.out.print("  logic  ");
-//            System.out.print(this_frame_logic_time);
-//            System.out.print("  draw  ");
-//            System.out.print(this_frame_draw_time);
-//            System.out.print("  tosleep  ");
-//            System.out.println(sleepTime);
-            
-            try
-            {
-            	if ( sleepTime > 0 )
-            		sleep(sleepTime);
-//            	else
-//            	{
-//            		sleep(10);
-//            	}
-            } catch (Exception e) {}
-
+    		
     	}
     }
+	
+	final void doLogic()
+	{
+	    switch ( logicState )
+        {
+            case Init:
+                logicState = GameState.EnterStart;
+                ThrustParticleSystem.active = false;
+                BackgroundStarsParticleSystem.slowmo = true;
+                configureSize(0, 0);
+                // fall through
+                
+            case EnterStart:
+                pressed = false;
+                states.resetShip();
+                // XXX may need to reset ship move command here or later?
+                this.calculateNewDirectionsAndSpeeds();
+                logicState = GameState.ReadyToStart;
+                // fall through
+                
+            case ReadyToStart:
+            {
+                states.swapStates();
+                
+                // force shield
+                states.current.ship.shield = true;
+                if ( states.prev.ship.shield_active )
+                {
+                    states.current.ship.shield_counter = states.prev.ship.shield_counter - 1;
+                    states.current.ship.shield_active = states.current.ship.shield_counter > 0;
+                }
+                else states.current.ship.shield_active = false;
+                
+                debrilMoveLogic(states.prev.debrils, states.current.debrils);
+                shieldCollisionLogic(states.current.ship, states.current.debrils, states.prev.debrils);
+                
+                if ( pressed )
+                {
+                    pressed = false;
+                    logicState = GameState.Game;
+                    states.resetShip();
+                    resetMoveCommand();
+                    // XXX hack to shield always on
+//                  states.current.ship.shield = true;
+
+                    BackgroundStarsParticleSystem.slowmo = false;
+                    ThrustParticleSystem.active = true;
+                }
+                
+            }
+                break;
+            
+            case Game:
+            {
+                {
+                    final ShipMoveCommand smc = getMoveCommand();
+                    states.current.ship.dir_x = smc.x;
+                    states.current.ship.dir_y = smc.y;
+                    states.current.ship.speed = 1.2f;
+                }
+                
+                
+                states.swapStates();
+                
+                final Ship ship = states.current.ship;
+                
+                ship.shield = states.prev.ship.shield;
+                
+                if ( states.prev.ship.shield_active )
+                {
+                    ship.shield_counter = states.prev.ship.shield_counter - 1;
+                    ship.shield_active = ship.shield_counter > 0;
+                }
+                else ship.shield_active = false;
+                
+                shipMoveLogic(states.prev.ship, ship);
+
+                debrilMoveLogic(states.prev.debrils, states.current.debrils);
+                
+                if ( ship.shield )
+                {
+                    shieldCollisionLogic(ship, states.current.debrils, states.prev.debrils);
+                }
+//                  else // enable "else" if ship explodes with shield (better find the logic error)
+                if ( shipCollisionLogic(ship, states.current.debrils) )
+                {
+                    final Ship pship = states.prev.ship;
+                    final float dx = pship.dir_x * pship.dir_x;
+                    final float dy = pship.dir_y * pship.dir_y;
+                    final float sspeed = (float)Math.sqrt(dx + dy);
+                    
+                    states.draw_state.addExplosion(ship.x, ship.y, pship.dir_x/sspeed, pship.dir_y/sspeed, (float)Math.min(Config.MAX_SPEED/4, sspeed*(Config.LPS/4)));
+                    view.soundPool.play(view.explosionSoundId, 1.0f, 1.0f, 0, 0, 1.0f);
+                    logicState = GameState.EnterDeath;
+                    pressed = false;
+                }
+            }
+                break;
+            
+            /*
+             * Sets all debrils speed limits and acceleration so they
+             * reduce to the minimum.
+             */
+            case EnterDeath:
+            {
+                ThrustParticleSystem.active = false;
+                BackgroundStarsParticleSystem.slowmo = true;
+                final Debril[] debrils = states.current.debrils;
+                final int e = debrils.length;
+                for ( int i = 0; i < e; i++ )
+                {
+                    debrils[i].max_speed = Config.REDUCED_SPEED_LOGIC;
+                    debrils[i].min_speed = Config.REDUCED_SPEED_LOGIC;
+                    if ( debrils[i].speed > debrils[i].max_speed )
+                    {
+                        debrils[i].acceleration = -Config.ACCEL_PER_LOGIC/4;
+                    }
+                    else if ( debrils[i].speed < debrils[i].min_speed )
+                    {
+                        debrils[i].acceleration = Config.ACCEL_PER_LOGIC/4;
+                    }
+                    else
+                    {
+                        debrils[i].acceleration = 0;
+                    }
+                }
+                
+                logicState = GameState.ReducingDeath;
+            }   
+                // fall through
+            
+            /*
+             * This waited until all the debrils were at the minimum speed
+             * TODO this could be removed, currently unwanted
+             */
+            case ReducingDeath:
+            {
+                boolean reduced = false;
+                final Debril[] debrils = states.current.debrils;
+                final int e = debrils.length;
+                for ( int i = 0; i < e; i++ )
+                {
+                    if ( debrils[i].acceleration != 0 )
+                    {
+                        reduced = true;
+                        break;
+                    }
+                }
+                
+                if ( ! reduced )
+                {
+                    logicState = GameState.Death;
+                }
+            }
+                // fall through
+                
+            case Death:
+                states.swapStates();
+                
+                debrilMoveLogic(states.prev.debrils, states.current.debrils);
+                
+//              if ( st == GameState.Death && pressed )
+                if ( pressed )
+                {
+                    logicState = GameState.EnterStart;
+                }
+                
+                break;
+        }
+	}
+	
+	final void interpol(final float rate, final long last_frame_time)
+	{
+	    switch ( logicState )
+	    {
+	        case ReadyToStart:
+                states.draw_state.reset();
+                states.interpolDebrils(rate);
+                states.interpolShip(rate);
+                
+                states.interpolParticles(last_frame_time);
+                
+                states.draw_state.alive_time = 0;
+                states.draw_state.addTop( GameResources.begin_message,
+                                          -(GameResources.begin_message.getWidth()/2),
+                                          -(GameResources.begin_message.getHeight()*2));
+	            break;
+	        
+	        case Game:
+                states.draw_state.reset();
+                states.interpolShip(rate);
+                states.interpolDebrils(rate);
+                states.interpolParticles(last_frame_time);
+                
+                states.draw_state.alive_time += last_frame_time;
+                
+                break;
+                
+	        case ReducingDeath:
+	        case Death:
+                states.draw_state.reset();
+                states.interpolDebrils(rate);
+                states.interpolParticles(last_frame_time);
+                
+                states.draw_state.addTop( GameResources.death_message,
+                                          -(GameResources.death_message.getWidth()/2),
+                                          -(GameResources.death_message.getHeight()*2));
+                
+                break;
+	    }
+	}
 	
 	final public void calculateNewDirectionsAndSpeeds()
 	{
@@ -751,8 +606,8 @@ if you have 96 x 96 image in xhdpi then, you need to put
     		d.dir_x = (float)Math.cos(dirangle);
     		d.dir_y = (float)Math.sin(dirangle);
 
-    		d.min_speed = REDUCED_SPEED_LOGIC;
-    		d.max_speed = (float)Math.random()* (MAX_SPEED_LOGIC/2) + MAX_SPEED_LOGIC/2;
+    		d.min_speed = Config.REDUCED_SPEED_LOGIC;
+    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
     		if ( d.speed > d.max_speed )
     		{
     			// -ACCEL_PER_LOGIC was wrong, because it would slow down to minimum!
@@ -762,7 +617,7 @@ if you have 96 x 96 image in xhdpi then, you need to put
     		}
     		else
     		{
-    			d.acceleration = ACCEL_PER_LOGIC;
+    			d.acceleration = Config.ACCEL_PER_LOGIC;
     		}
     	}
 	}
@@ -794,10 +649,10 @@ if you have 96 x 96 image in xhdpi then, you need to put
     		d.dir_x = (float)Math.cos(dirangle);
     		d.dir_y = (float)Math.sin(dirangle);
     		
-    		d.min_speed = REDUCED_SPEED_LOGIC;
-    		d.max_speed = (float)Math.random()* (MAX_SPEED_LOGIC/2) + MAX_SPEED_LOGIC/2;
+    		d.min_speed = Config.REDUCED_SPEED_LOGIC;
+    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
     		d.speed = 0;
-    		d.acceleration = ACCEL_PER_LOGIC;
+    		d.acceleration = Config.ACCEL_PER_LOGIC;
     	}
     	
     	states.copyCurrentToPrev();

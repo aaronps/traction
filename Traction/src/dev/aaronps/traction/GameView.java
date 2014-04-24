@@ -49,6 +49,8 @@ public class GameView extends SurfaceView
     private int surf_width = 0;
     private int surf_height = 0;
     
+    float x_ratio;
+    
     
 	public GameView(Context context)
 	{
@@ -122,7 +124,15 @@ public class GameView extends SurfaceView
         	   if ( ! configured )
         	   {
         		   viewMatrix.reset();
-//        		   viewMatrix.setScale(0.5f, 0.5f);
+//        		   final float screen_ratio = height / (float)width;
+        		   
+        		   final float desired_x = 480f;
+        		   x_ratio = width / desired_x;
+        		   
+        		   
+        		   
+        		   
+        		   viewMatrix.setScale( x_ratio, x_ratio);
         		   viewMatrix.postTranslate(width/2, height/2);
         		   gameLoopThread.configureSize(width, height);
         		   configured = true;
@@ -174,7 +184,7 @@ public class GameView extends SurfaceView
 //	    		System.out.println(String.format("MOVE: from %f,%f to %f,%f diff %f,%f",
 //	    										  prev_x, prev_y, new_x, new_y, dx, dy));
 
-	    		gameLoopThread.moveShip(dx, dy);
+	    		gameLoopThread.moveShip(dx/x_ratio, dy/x_ratio);
 
 	    		prev_x = new_x;
 	    		prev_y = new_y;
