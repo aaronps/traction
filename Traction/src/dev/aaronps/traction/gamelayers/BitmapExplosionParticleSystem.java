@@ -1,10 +1,12 @@
-package dev.aaronps.traction;
+package dev.aaronps.traction.gamelayers;
 
+import dev.aaronps.traction.GameResources;
+import dev.aaronps.traction.ParticleSystem;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
-public class BitmapExplosionParticleSystem implements ParticleSystem
+public class BitmapExplosionParticleSystem implements ParticleSystem, GameLayer
 {
 	// if image changes, update here
 	static final int frame_w = 64;

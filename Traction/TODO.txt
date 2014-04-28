@@ -1,0 +1,21 @@
+
+
+
+From Julian:
+- control de volumen
+- control no es suave (prefiere el modo directo)
+- highscore y vidas
+- no hay objetivo
+- no hay sensacion de movimiento, los meteoritos vienen de todos los lados a
+    misma velocidad y direccion aleatoria, si te mueves hacia alante deberian
+    venir de frente.
+
+
+
+
+
+
+
+
+
+

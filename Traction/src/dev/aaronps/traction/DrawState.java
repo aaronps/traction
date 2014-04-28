@@ -1,37 +1,30 @@
 package dev.aaronps.traction;
 
+import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
+import dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem;
+import dev.aaronps.traction.gamelayers.GameLayer;
+import dev.aaronps.traction.gamelayers.SparkParticleSystem;
+import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
 import android.graphics.Bitmap;
 
 public class DrawState
 {
-	public Sprite[] sprites;
-	public int sprite_count;
-
-	BackgroundStarsParticleSystem backgroundStars;
-	BitmapExplosionParticleSystem explosions;
-	SparkParticleSystem sparks;
-	ThrustParticleSystem thrustParticles;
-	
 	public Sprite[] topLayer;
 	public int topLayerCount;
 	
 	public long alive_time;
 	public long last_fps;
 	
+	private static int MAX_GAME_LAYERS = 5;
+	public GameLayer[] game_layers;
+	public int game_layer_count;
+	
+	
 	public DrawState(final int max_sprites, final int max_particles)
 	{
-		sprite_count = 0;
-		sprites = new Sprite[max_sprites];
-		for ( int n = 0; n < max_sprites; n++ )
-		{
-			sprites[n] = new Sprite();
-		}
-		
-		backgroundStars = new BackgroundStarsParticleSystem();
-		explosions = new BitmapExplosionParticleSystem();
-		sparks = new SparkParticleSystem();
-		thrustParticles = new ThrustParticleSystem();
-		
+	    game_layers = new GameLayer[MAX_GAME_LAYERS];
+	    game_layer_count = 0;
+	    
 		topLayerCount = 0;
 		topLayer = new Sprite[5];
 		for ( int n = 0; n < 5; n++ )
@@ -43,34 +36,18 @@ public class DrawState
 		last_fps = 0;
 	}
 	
-	public void reset() { sprite_count = 0; topLayerCount = 0; }
+	public void reset() { game_layer_count = 0; topLayerCount = 0; }
 	
-	public void add(final Bitmap image, final float x, final float y)
+	public void addLayer(final GameLayer layer)
 	{
-		final Sprite s = sprites[sprite_count++];
-		s.image = image;
-		s.x = x;
-		s.y = y;
+	    game_layers[game_layer_count++] = layer;
 	}
 	
-	public void addTop(final Bitmap image, final float x, final float y)
+	public void addUI(final Bitmap image, final float x, final float y)
 	{
 		final Sprite s = topLayer[topLayerCount++];
 		s.image = image;
 		s.x = x;
 		s.y = y;
 	}
-	
-	public void addExplosion(final float x, final float y, final float dir_x, final float dir_y, final float speed)
-	{
-		explosions.add(Math.round(x), Math.round(y), dir_x, dir_y, speed);
-//		ExplosionParticle p = new ExplosionParticle(Math.round(x), Math.round(y), dir_x, dir_y, ms_speed);
-//		particles[particle_count++] = p;
-	}
-	
-	public void addSpark(final float x, final float y, final float dir_x, final float dir_y, final float speed)
-	{
-		sparks.addSpark(x, y, dir_x, dir_y);
-	}
-
 }

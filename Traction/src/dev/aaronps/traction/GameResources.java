@@ -30,6 +30,12 @@ public class GameResources
 	
 	public static Bitmap explosion = null;
 	
+	public static int shieldHitSound = -1;
+	public static int explosionSound = -1;
+	
+	public static Bitmap yepart = null;
+	
+	
 	
 	public static void loadResources(final AssetManager am) throws IOException
 	{
@@ -50,9 +56,9 @@ public class GameResources
 			numbers_24x32 = BitmapFactory.decodeStream(is);
 			is.close();
 		}
-		
+
 		{
-			final InputStream is = am.open("ship.png");
+			final InputStream is = am.open("ship4.png");
 			ship = BitmapFactory.decodeStream(is);
 			is.close();
 			ship_offset_x = ship.getWidth()/2;
@@ -72,7 +78,8 @@ public class GameResources
 		}
 		
 		{
-			final InputStream is = am.open("ship-aura.png");
+//		    final InputStream is = am.open("aura1.png");
+			final InputStream is = am.open("ship-aura-active.png");
 			ship_aura = BitmapFactory.decodeStream(is);
 			is.close();
 			ship_aura_offset_x = ship_aura.getWidth()/2;
@@ -80,7 +87,7 @@ public class GameResources
 		}
 		
 		{
-			final InputStream is = am.open("ship-aura-active.png");
+			final InputStream is = am.open("ship-aura.png");
 			ship_aura_active = BitmapFactory.decodeStream(is);
 			is.close();
 		}
@@ -89,6 +96,12 @@ public class GameResources
 			final InputStream is = am.open("explosion-8.png");
 			explosion = BitmapFactory.decodeStream(is);
 			is.close();
+		}
+		
+		{
+		    final InputStream is = am.open("yepart.png");
+		    yepart = BitmapFactory.decodeStream(is);
+		    is.close();
 		}
 	}
 

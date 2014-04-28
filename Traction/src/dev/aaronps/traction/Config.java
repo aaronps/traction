@@ -36,7 +36,7 @@ public class Config
 
     
     public static final long LPS = 60;
-    public static final long DELAY_BETWEEN_LOGICS = 1000/LPS;
+    public static final long DELAY_BETWEEN_LOGICS = 17; //1000/LPS;
     public static final float ACCEL_PER_SECOND = 25.0f;
     public static final float ACCEL_PER_LOGIC = ACCEL_PER_SECOND / LPS;
     public static final float MAX_SPEED = 240f;

@@ -2,6 +2,9 @@ package dev.aaronps.traction;
 
 import java.io.IOException;
 
+import dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem;
+import dev.aaronps.traction.gamelayers.GameLayer;
+import dev.aaronps.traction.gamelayers.SparkParticleSystem;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -19,76 +22,54 @@ import android.view.SurfaceView;
 
 public class GameView extends SurfaceView
 {
-    private SurfaceHolder holder;
-    private GameLoopThread gameLoopThread;
+    SurfaceHolder holder;
+    GameLoopThread gameLoopThread;
     
-    private Paint timePaint;
-    private Paint dotPaint;
-    private Paint fpsPaint;
-    private boolean configured = false;
+    boolean configured = false;
     
-    public SoundPool soundPool;
-    public int explosionSoundId = -1;
-    public int shieldHitSoundId = -1;
+    Matrix viewMatrix = new Matrix();
+    Matrix uiMatrix = new Matrix();
     
-    private Matrix viewMatrix = new Matrix();
-    private Matrix identityMatrix = new Matrix();
+    static int[] static_decimals = new int[3];
+    static int[] static_inte = new int[20];
     
-    private static int[] static_decimals = new int[3];
-    private static int[] static_inte = new int[20];
-    
-    private static int NUMBER_WIDTH = 24;
-    private static int NUMBER_HEIGHT = 32;
-    private static int DOT_WIDTH = 16;
+    static int NUMBER_WIDTH = 24;
+    static int NUMBER_HEIGHT = 32;
+    static int DOT_WIDTH = 16;
     
     
     // need to set the font size here
-    private Rect number_src = new Rect(0, 0, 24, 32);
-    private Rect number_dst = new Rect(0, 0, 24, 32);
+    Rect number_src = new Rect(0, 0, 24, 32);
+    Rect number_dst = new Rect(0, 0, 24, 32);
     
-    private int surf_width = 0;
-    private int surf_height = 0;
+    int surf_width = 0;
+    int surf_height = 0;
+    
+    final int virtual_width = 480;
+    
+    Context ctx = null;
+    
+    Paint button_bg_paint = null;
     
 	public GameView(Context context)
 	{
 		super(context);
+		ctx = context;
 		
-		soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
-		final AssetManager am = context.getAssets();
-		try
-		{
-			explosionSoundId = soundPool.load(am.openFd("DeathFlashCut.ogg"), 0);
-			shieldHitSoundId = soundPool.load(am.openFd("shield-hit2.ogg"), 0);
-		}
-		catch (IOException e1)
-		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		dotPaint = new Paint();
-		dotPaint.setColor(0xffddeedd);
-		dotPaint.setStrokeWidth(0);
-		
-		timePaint = new Paint();
-		timePaint.setColor(Color.WHITE);
-		timePaint.setTextAlign(Paint.Align.CENTER);
-		timePaint.setTextSize(42);
-		
-		fpsPaint = new Paint();
-		fpsPaint.setColor(Color.WHITE);
-		fpsPaint.setTextAlign(Paint.Align.RIGHT);
-		fpsPaint.setTextSize(18);
+		button_bg_paint = new Paint();
+//		button_bg_paint.setColor( 0x8000a2ff );
+//		button_bg_paint.setColor( 0x8023a0e7 );
+		button_bg_paint.setColor( 0x80dddddd );
 		
 		gameLoopThread = new GameLoopThread(this);
 		holder = getHolder();
+		holder.setKeepScreenOn( true );
         holder.addCallback(new SurfaceHolder.Callback()
         {
            @Override
            public void surfaceDestroyed(SurfaceHolder holder)
            {
                gameLoopThread.setRunning(false);
-               soundPool.release();
                
                while (true)
                {
@@ -98,13 +79,15 @@ public class GameView extends SurfaceView
                        break;
             	   } catch (InterruptedException e) {}
                }
-               soundPool = null;
+
+               SoundManager.deinit();
            }
 
            @Override
            public void surfaceCreated(SurfaceHolder holder)
            {
         	   Log.i("GameView", "Surface created");
+        	   SoundManager.init( ctx );
         	   gameLoopThread.setRunning(true);
                gameLoopThread.start();
            }
@@ -115,7 +98,7 @@ public class GameView extends SurfaceView
     		   							int width,
     		   							int height)
            {
-        	   System.out.println(String.format("Surface changed: %dx%d", width, height));
+        	   System.out.println(String.format("Surface changed: format %d size %dx%d", format, width, height));
         	   surf_width = width;
         	   surf_height = height;
         	   if ( ! configured )
@@ -130,6 +113,7 @@ public class GameView extends SurfaceView
         		   Config.screen_y_ratio = x_ratio;
         		   
         		   viewMatrix.setScale( x_ratio, x_ratio);
+        		   uiMatrix.set( viewMatrix );
         		   viewMatrix.postTranslate(width/2, height/2);
         		   gameLoopThread.configureSize(width, height);
         		   configured = true;
@@ -142,17 +126,13 @@ public class GameView extends SurfaceView
         System.out.println("Loading assets");
         
         try {
-			GameResources.loadResources(am);
+			GameResources.loadResources(context.getAssets());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
-	
-//	boolean pressing = false;
-//	float prev_x = 0;
-//	float prev_y = 0;
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent e)
@@ -169,31 +149,37 @@ public class GameView extends SurfaceView
 		return true;
 	}
 	
+	final void drawMenu(final Canvas canvas, final DrawState state)
+	{
+	    canvas.drawColor(Color.BLACK);
+	    
+	    canvas.setMatrix(viewMatrix);
+	    
+	    final int e = state.game_layer_count;
+	    final GameLayer[] layers = state.game_layers;
+	    for ( int i = 0; i < e; i++ )
+	    {
+	        layers[i].draw( canvas );
+	    }
+	    
+	    canvas.setMatrix( uiMatrix );
+	    
+	    canvas.drawRect( 100, 100, 380, 200, button_bg_paint);
+	}
+	
     final void drawState(final Canvas canvas, final DrawState state)
 	{
 		canvas.drawColor(Color.BLACK);
 		canvas.setMatrix(viewMatrix);
 		
-		state.backgroundStars.draw(canvas);
-		state.thrustParticles.draw(canvas);
-		
-		final Sprite[] sprites = state.sprites;
-		final int count = state.sprite_count;
-		for ( int n = 0; n < count; n++ )
-		{
-			final Sprite s = sprites[n];
-			canvas.drawBitmap( s.image, s.x, s.y, null);
-		}
-		
-		if ( BitmapExplosionParticleSystem.particle_count > 0 )
-		{
-			state.explosions.draw(canvas);
-		}
-		
-		if ( SparkParticleSystem.particle_count > 0 )
-		{
-			state.sparks.draw(canvas);
-		}
+		final int e = state.game_layer_count;
+        final GameLayer[] layers = state.game_layers;
+        for ( int i = 0; i < e; i++ )
+        {
+            layers[i].draw( canvas );
+        }
+
+		canvas.setMatrix(uiMatrix);
 		
 		if ( state.topLayerCount > 0 )
 		{
@@ -206,7 +192,6 @@ public class GameView extends SurfaceView
 			}
 		}
 		
-		canvas.setMatrix(identityMatrix);
 		
 		{
 			final int[] decimals = static_decimals;
@@ -227,12 +212,12 @@ public class GameView extends SurfaceView
 	        } while ( tmp > 0 );
 	        
 	        final int total_chars = 3 + maxinte;
-	        final int total_draw_len = total_chars * NUMBER_WIDTH + DOT_WIDTH;
+	        final int total_draw_len = total_chars * DOT_WIDTH + DOT_WIDTH;
 	        
 	        final Rect src = number_src;
 	        final Rect dst = number_dst;
 	        
-	        final int soff = surf_width / 2 - total_draw_len / 2;
+	        final int soff = virtual_width / 2 - total_draw_len / 2;
 	        
 	        dst.offsetTo(soff, 0);
 	        
@@ -273,9 +258,9 @@ public class GameView extends SurfaceView
 	            tmp /= 10;
 	        } while ( tmp > 0 );
         	
-	        final int fps_draw_len = maxinte * NUMBER_WIDTH + DOT_WIDTH;
+	        final int fps_draw_len = maxinte * DOT_WIDTH + DOT_WIDTH;
         	
-	        dst.offsetTo(surf_width - fps_draw_len, 0);
+	        dst.offsetTo(virtual_width - fps_draw_len, 0);
 	        
 	        do
 	        {
@@ -287,11 +272,6 @@ public class GameView extends SurfaceView
 	        // end draw fps
         	
 		}
-		
-		
-		
-//		canvas.drawText(String.format("%d.%03d", state.alive_time/1000, state.alive_time%1000), canvas.getWidth()/2, 40, timePaint);
-//		canvas.drawText(String.format("fps: %d", state.last_fps), canvas.getWidth()-1, 20, fpsPaint);
 		
 	}
 

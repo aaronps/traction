@@ -1,11 +1,14 @@
-package dev.aaronps.traction;
+package dev.aaronps.traction.gamelayers;
 
 import java.util.Random;
 
+import dev.aaronps.traction.GameResources;
+import dev.aaronps.traction.ParticleSystem;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 
-public class SparkParticleSystem implements ParticleSystem
+public class SparkParticleSystem implements ParticleSystem, GameLayer
 {
 	public static class SparkParticle
 	{
@@ -38,6 +41,8 @@ public class SparkParticleSystem implements ParticleSystem
 	static Paint sparkPaint = null;
 	static Random rnd = new Random();
 	
+	private static RectF drect = new RectF();
+	
 	public SparkParticleSystem()
 	{
 		particles = new SparkParticle[MAX_PARTICLES];
@@ -47,7 +52,7 @@ public class SparkParticleSystem implements ParticleSystem
 		}
 		
 		sparkPaint = new Paint();
-		sparkPaint.setColor(0xff00bbff); //blue
+//		sparkPaint.setColor(0xff00bbff); //blue
 //		sparkPaint.setColor(0xffffde00); //yellow center
 	}
 	
@@ -82,12 +87,22 @@ public class SparkParticleSystem implements ParticleSystem
 	@Override
 	public void draw(Canvas canvas)
 	{
+	    final RectF r = drect;
 		for ( int i = particle_count; i != 0; /* emtpy */ )
 		{
 			final SparkParticle p = particles[--i];
 			sparkPaint.setAlpha(Math.round(p.alivetime * 255 / p.total_alivetime));
-			final float rad = p.alivetime * 2f / p.total_alivetime;
-			canvas.drawCircle(p.x, p.y, rad, sparkPaint);
+			
+			final float siz = p.alivetime * 4 / p.total_alivetime; // will use double of this size
+			r.set( p.x-siz, p.y-siz, p.x+siz, p.y+siz);
+			canvas.drawBitmap( GameResources.yepart, null, r, sparkPaint );
+//          canvas.drawBitmap( GameResources.yepart, p.x-8, p.y-8, thrustPaint );
+			
+			
+//			final float rad = p.alivetime * 2f / p.total_alivetime;
+//			canvas.drawCircle(p.x, p.y, rad, sparkPaint);
+			
+			
 //			canvas.drawPoint(p.x, p.y, sparkPaint);
 		}
 	}

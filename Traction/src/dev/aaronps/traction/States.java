@@ -1,5 +1,10 @@
 package dev.aaronps.traction;
 
+import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
+import dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem;
+import dev.aaronps.traction.gamelayers.SparkParticleSystem;
+import dev.aaronps.traction.gamelayers.SpriteLayer;
+import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
 import android.graphics.Bitmap;
 
 public class States
@@ -8,11 +13,23 @@ public class States
 	State current;
 	DrawState draw_state;
 	
+	SpriteLayer sprite_layer;
+	BackgroundStarsParticleSystem backgroundStars;
+    BitmapExplosionParticleSystem explosions;
+    SparkParticleSystem sparks;
+    ThrustParticleSystem thrustParticles;
+	
 	public States(final int debril_count)
 	{
 		prev    = new State(debril_count);
 		current = new State(debril_count);
 		draw_state = new DrawState(debril_count+2, 5);
+		
+		sprite_layer = new SpriteLayer( debril_count + 2 );
+		backgroundStars = new BackgroundStarsParticleSystem();
+        explosions = new BitmapExplosionParticleSystem();
+        sparks = new SparkParticleSystem();
+        thrustParticles = new ThrustParticleSystem();
 	}
 	
 	final void copyCurrentToPrev()
@@ -62,20 +79,18 @@ public class States
 		final float p_rate = 1.0f - c_rate;
 		final float x = (current.ship.x * c_rate + prev.ship.x * p_rate);
 		final float y = (current.ship.y * c_rate + prev.ship.y * p_rate);
-
-		draw_state.add( GameResources.ship,
-//						current.ship.x - GameResources.ship_offset_x,
-//						current.ship.y - GameResources.ship_offset_y);
-						x - GameResources.ship_offset_x,
-						y - GameResources.ship_offset_y);
 		
-		draw_state.thrustParticles.setShipLocation(x,y);
+		sprite_layer.add( GameResources.ship,
+            		      x - GameResources.ship_offset_x,
+            		      y - GameResources.ship_offset_y);
+		
+		thrustParticles.setShipLocation(x,y);
 		
 		if ( current.ship.shield )
 		{
-			draw_state.add( current.ship.shield_active ? GameResources.ship_aura_active : GameResources.ship_aura,
-							x - GameResources.ship_aura_offset_x,
-							y - GameResources.ship_aura_offset_y);
+			sprite_layer.add( current.ship.shield_active ? GameResources.ship_aura_active : GameResources.ship_aura,
+							  x - GameResources.ship_aura_offset_x,
+							  y - GameResources.ship_aura_offset_y);
 			
 		}
 	}
@@ -91,19 +106,19 @@ public class States
 		
 		for ( int n = 0, e = cur_d.length; n < e; n++ )
 		{
-			draw_state.add( i, 
-							(cur_d[n].x * c_rate + pre_d[n].x * p_rate)-GameResources.debril_offset_x,
-							(cur_d[n].y * c_rate + pre_d[n].y * p_rate)-GameResources.debril_offset_y);
+			sprite_layer.add( i, 
+							  (cur_d[n].x * c_rate + pre_d[n].x * p_rate)-GameResources.debril_offset_x,
+							  (cur_d[n].y * c_rate + pre_d[n].y * p_rate)-GameResources.debril_offset_y);
 		}
 	}
 	
 	final void interpolParticles(final long frame_time)
 	{
 		final float ftime = frame_time/1000f;
-		draw_state.backgroundStars.logic(ftime);
-		draw_state.explosions.logic(ftime);
-		draw_state.sparks.logic(ftime);
-		draw_state.thrustParticles.logic(ftime);
+		backgroundStars.logic(ftime);
+		explosions.logic(ftime);
+		sparks.logic(ftime);
+		thrustParticles.logic(ftime);
 	}
 
 	final void resetShip()
@@ -116,5 +131,17 @@ public class States
 		s.x = s.y = s.dir_x = s.dir_y = s.speed = 0;
 		s.shield = s.shield_active = false;
 	}
+	
+	public void addExplosion(final float x, final float y, final float dir_x, final float dir_y, final float speed)
+    {
+        explosions.add(Math.round(x), Math.round(y), dir_x, dir_y, speed);
+//      ExplosionParticle p = new ExplosionParticle(Math.round(x), Math.round(y), dir_x, dir_y, ms_speed);
+//      particles[particle_count++] = p;
+    }
+    
+    public void addSpark(final float x, final float y, final float dir_x, final float dir_y, final float speed)
+    {
+        sparks.addSpark(x, y, dir_x, dir_y);
+    }
 
 }

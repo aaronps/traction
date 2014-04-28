@@ -15,7 +15,7 @@ public class InputManager
      *  1 - joystick
      */
     
-    private static int working_mode = 1;
+    private static int working_mode = 0;
     private static float joystick_x = 0;
     private static float joystick_y = 0;
     private static float pointer_x = 0;

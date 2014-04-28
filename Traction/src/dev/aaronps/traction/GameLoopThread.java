@@ -1,19 +1,16 @@
 package dev.aaronps.traction;
 
-import java.util.InputMismatchException;
-
+import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
+import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
 import android.graphics.Canvas;
-import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.os.Process;
 
 public class GameLoopThread extends Thread
 {
 	
 	private static enum GameState
 	{
-		Init, EnterStart, ReadyToStart, Game, EnterDeath, ReducingDeath, Death;
+		MainMenu, Init, EnterStart, ReadyToStart, Game, EnterDeath, ReducingDeath, Death;
 	}
 	
 	private static Rect shipRect = new Rect();
@@ -198,8 +195,7 @@ public class GameLoopThread extends Thread
 	                
 	                ship.shield_active = true;
 					ship.shield_counter = Math.round(Config.LPS)/2;
-	                view.soundPool.play(view.shieldHitSoundId, 0.8f, 0.8f, 0, 0, 1.0f);
-
+					SoundManager.player.play( GameResources.shieldHitSound );
 					continue;
 				}
 				
@@ -224,9 +220,9 @@ public class GameLoopThread extends Thread
 				final float vec_from_shield_x = (debril.x - shield_x) / Config.COMBINED_RADII;
 	            final float vec_from_shield_y = (debril.y - shield_y) / Config.COMBINED_RADII;
 	            
-	            states.draw_state.addSpark( shield_x + vec_from_shield_x * Config.SHIELD_RADII,
-	            							shield_y + vec_from_shield_y * Config.SHIELD_RADII,
-	            							vec_from_shield_x, vec_from_shield_y, 0);
+	            states.addSpark( shield_x + vec_from_shield_x * Config.SHIELD_RADII,
+    							 shield_y + vec_from_shield_y * Config.SHIELD_RADII,
+    							 vec_from_shield_x, vec_from_shield_y, 0);
 	            
 	            // invert previous direction
 	            final float ipdir_x = -prev_debril.dir_x;
@@ -267,7 +263,7 @@ public class GameLoopThread extends Thread
 				ship.shield_active = true;
 				ship.shield_counter = Math.round(Config.LPS)/2;
 				
-				view.soundPool.play(view.shieldHitSoundId, 0.8f, 0.8f, 0, 0, 1.0f);
+				SoundManager.player.play( GameResources.shieldHitSound );
 			}
 		}
 		
@@ -278,7 +274,9 @@ public class GameLoopThread extends Thread
     public void run()
     {
         int fps_count = 0;
-        long fps_count_start_time = System.currentTimeMillis();
+        long last_frame_start = System.currentTimeMillis();
+        long accumulator = -1;
+        long fps_count_start_time = last_frame_start; // System.currentTimeMillis();
         long last_second_fps_count = 0;
         
     	shipRect.set(0, 0, GameResources.shipMask.getWidth(), GameResources.shipMask.getHeight());
@@ -292,9 +290,15 @@ public class GameLoopThread extends Thread
     		    c = view.getHolder().lockCanvas();
     		    if ( c != null )
     		    {
+    		        
 //    		        synchronized (view.getHolder())
 //    		        {
             		final long this_frame_start =  System.currentTimeMillis();
+            		if ( accumulator < 0 )
+            		{
+            		    last_frame_start = this_frame_start;
+            		    accumulator = 0;
+            		}
             		
             		final long fps_time = this_frame_start - fps_count_start_time;
             		if ( fps_time >= 1000 )
@@ -304,20 +308,38 @@ public class GameLoopThread extends Thread
             			fps_count = 0;
             		}
             		
-//            		final long last_frame_time = this_frame_start - last_frame_start;
-//            		accumulator += last_frame_time;
-//            		doLogic( (int)(accumulator / DELAY_BETWEEN_LOGICS) );
+            		final long last_frame_time = this_frame_start - last_frame_start;
+            		accumulator += last_frame_time;
+            		int loopcount = 1;
+            		while ( ++loopcount < 105 && accumulator >= Config.DELAY_BETWEEN_LOGICS )
+            		{
+            		    doLogic();
+            		    accumulator -= Config.DELAY_BETWEEN_LOGICS;
 //            		accumulator %= DELAY_BETWEEN_LOGICS;
-//            		interpol( accumulator/(float)DELAY_BETWEEN_LOGICS, last_frame_time );
+            		}
+            		if ( accumulator < Config.DELAY_BETWEEN_LOGICS )
+            		{
+            		    interpol( 1f + (accumulator/(float)Config.DELAY_BETWEEN_LOGICS), last_frame_time );
+            		}
+            		else
+            		{
+            		    interpol( loopcount/-2f, last_frame_time );
+//            		    interpol( -1.0f, last_frame_time );
+            		}
+//            		interpol( accumulator/(float)Config.DELAY_BETWEEN_LOGICS, last_frame_time );
+//            		interpol( 1.0f, last_frame_time );
             		
-            		doLogic();
+//            		doLogic();
             		interpol( 1.0f, Config.DELAY_BETWEEN_LOGICS );
             		
                     states.draw_state.last_fps = last_second_fps_count;
             		
 					view.drawState(c, states.draw_state);
+//					view.drawMenu( c, states.draw_state );
 //    				} // synchronized()
 					++fps_count;
+					
+					last_frame_start = this_frame_start;
     			}
     		}
     		finally
@@ -336,6 +358,10 @@ public class GameLoopThread extends Thread
 	{
 	    switch ( logicState )
         {
+	        case MainMenu:
+	            BackgroundStarsParticleSystem.slowmo = true;
+	            break;
+	        
             case Init:
                 logicState = GameState.EnterStart;
                 ThrustParticleSystem.active = false;
@@ -421,8 +447,8 @@ public class GameLoopThread extends Thread
                     final float dy = pship.dir_y * pship.dir_y;
                     final float sspeed = (float)Math.sqrt(dx + dy);
                     
-                    states.draw_state.addExplosion(ship.x, ship.y, pship.dir_x/sspeed, pship.dir_y/sspeed, (float)Math.min(Config.MAX_SPEED/4, sspeed*(Config.LPS/4)));
-                    view.soundPool.play(view.explosionSoundId, 1.0f, 1.0f, 0, 0, 1.0f);
+                    states.addExplosion(ship.x, ship.y, pship.dir_x/sspeed, pship.dir_y/sspeed, (float)Math.min(Config.MAX_SPEED/4, sspeed*(Config.LPS/4)));
+                    SoundManager.player.play( GameResources.explosionSound ); // volume shall be 1.0
                     logicState = GameState.EnterDeath;
                     InputManager.resetPress();
                 }
@@ -503,40 +529,73 @@ public class GameLoopThread extends Thread
 	
 	final void interpol(final float rate, final long last_frame_time)
 	{
+	    final DrawState ds = states.draw_state;
 	    switch ( logicState )
 	    {
+	        case MainMenu:
+	            ds.reset();
+	            states.interpolParticles(last_frame_time);
+	            
+	            ds.addLayer( states.backgroundStars );
+	            
+	            break;
+	            
 	        case ReadyToStart:
-                states.draw_state.reset();
+                ds.reset();
+                states.sprite_layer.reset();
+                
                 states.interpolDebrils(rate);
                 states.interpolShip(rate);
                 
                 states.interpolParticles(last_frame_time);
                 
+                ds.addLayer( states.backgroundStars );
+                ds.addLayer( states.explosions );
+                ds.addLayer( states.thrustParticles );
+                ds.addLayer( states.sprite_layer );
+                ds.addLayer( states.sparks );
+                
                 states.draw_state.alive_time = 0;
-                states.draw_state.addTop( GameResources.begin_message,
-                                          -(GameResources.begin_message.getWidth()/2),
-                                          -(GameResources.begin_message.getHeight()*2));
+                states.draw_state.addUI( GameResources.begin_message,
+                                          (480/2)-(GameResources.begin_message.getWidth()/2),
+                                          (800/2)-(GameResources.begin_message.getHeight()*2));
+                
 	            break;
 	        
 	        case Game:
-                states.draw_state.reset();
-                states.interpolShip(rate);
-                states.interpolDebrils(rate);
-                states.interpolParticles(last_frame_time);
+	            ds.reset();
+	            states.sprite_layer.reset();
+	            
+	            states.interpolShip(rate);
+	            states.interpolDebrils(rate);
+	            states.interpolParticles(last_frame_time);
                 
-                states.draw_state.alive_time += last_frame_time;
+                
+                ds.alive_time += last_frame_time;
+                
+                ds.addLayer( states.backgroundStars );
+                ds.addLayer( states.explosions );
+                ds.addLayer( states.thrustParticles );
+                ds.addLayer( states.sprite_layer );
+                ds.addLayer( states.sparks );
                 
                 break;
                 
 	        case ReducingDeath:
 	        case Death:
-                states.draw_state.reset();
+                ds.reset();
+                states.sprite_layer.reset();
+                
                 states.interpolDebrils(rate);
                 states.interpolParticles(last_frame_time);
                 
-                states.draw_state.addTop( GameResources.death_message,
-                                          -(GameResources.death_message.getWidth()/2),
-                                          -(GameResources.death_message.getHeight()*2));
+                ds.addLayer( states.backgroundStars );
+                ds.addLayer( states.explosions );
+                ds.addLayer( states.sprite_layer );
+                
+                ds.addUI( GameResources.death_message,
+                                        (480/2) - (GameResources.death_message.getWidth()/2),
+                                        (800/2) - (GameResources.death_message.getHeight()*2));
                 
                 break;
 	    }
