@@ -73,5 +73,6 @@ public class Config
     public static final int MENU_BUTTON_HEIGHT = 100;
     public static final int MENU_BUTTON_TEXT_SIZE = 80;
     public static final int MENU_BUTTON_BACKGROUND = 0x80dddddd;
+    public static final int MENU_BUTTON_SELECTED   = 0x8011dd22;
     
 }

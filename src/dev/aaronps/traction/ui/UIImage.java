@@ -31,6 +31,16 @@ public class UIImage implements UIElement
         this.y = y;
     }
     
+    public boolean inside(final float px, final float py)
+    {
+        final float rx = px - x;
+        final float ry = py - y;
+        return rx > 0
+            && ry > 0
+            && rx < image.getWidth()
+            && ry < image.getHeight();
+    }
+    
     void set(final Bitmap image, final float x, final float y)
     {
         this.image = image;

@@ -50,7 +50,6 @@ public class GameView extends SurfaceView
         
         System.out.println("Assets loaded");
 
-        gameLoopThread = new GameLoopThread(this);
         holder = getHolder();
         holder.setKeepScreenOn(true);
         holder.addCallback(new SurfaceHolder.Callback()
@@ -58,6 +57,7 @@ public class GameView extends SurfaceView
             @Override
             public void surfaceDestroyed(SurfaceHolder holder)
             {
+                System.out.println("Destroyed");
                 gameLoopThread.setRunning(false);
 
                 while (true)
@@ -70,6 +70,8 @@ public class GameView extends SurfaceView
                 }
 
                 SoundManager.deinit();
+                gameLoopThread = null;
+                System.out.println("Destroy finish");
             }
 
             @Override
@@ -77,6 +79,7 @@ public class GameView extends SurfaceView
             {
                 Log.i("GameView", "Surface created");
                 SoundManager.init(ctx);
+                gameLoopThread = new GameLoopThread(GameView.this);
                 gameLoopThread.setRunning(true);
                 gameLoopThread.start();
             }

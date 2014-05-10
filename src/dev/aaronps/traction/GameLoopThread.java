@@ -1,11 +1,13 @@
 package dev.aaronps.traction;
 
+import android.content.Intent;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
 import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
-import dev.aaronps.traction.ui.UIElement;
+import dev.aaronps.traction.ui.UIButton;
 import dev.aaronps.traction.ui.UIImage;
 import dev.aaronps.traction.ui.UINumber;
 
@@ -13,7 +15,7 @@ public class GameLoopThread extends Thread
 {
     private static enum GameState
     {
-        MainMenu, Init, EnterStart, ReadyToStart,
+        MainMenu, ConfigControl, Init, EnterStart, ReadyToStart,
         Game, EnterDeath, ReducingDeath, Death;
     }
 
@@ -29,11 +31,19 @@ public class GameLoopThread extends Thread
 
     private final InputManager.MoveCommand moveCommand = new InputManager.MoveCommand();
 
-    private final UIElement start_button;
-    private final UIElement config_button;
-    private final UIElement exit_button;
-    private final UIElement begin_message;
-    private final UIElement death_message;
+    private final Paint button_paint;
+    private final Paint selected_button_paint;
+    
+    private final UIImage begin_message;
+    private final UIImage death_message;
+    
+    private final UIButton start_button;
+    private final UIButton config_button;
+    private final UIButton exit_button;
+    
+    private final UIButton back_button;
+    private final UIButton direct_button;
+    private final UIButton joystick_button;
     
     private final UINumber fps_number;
     private final UINumber alive_time_number;
@@ -43,9 +53,19 @@ public class GameLoopThread extends Thread
         this.view = view;
         states = new States(Config.MAX_DEBRIL_COUNT);
         
-        start_button  = new UIImage(Res.menu_play,   100, 200);
-        config_button = new UIImage(Res.menu_config, 100, 350);
-        exit_button   = new UIImage(Res.menu_exit,   100, 500);
+        button_paint = new Paint();
+        button_paint.setColor(Config.MENU_BUTTON_BACKGROUND);
+        
+        selected_button_paint = new Paint();
+        selected_button_paint.setColor(Config.MENU_BUTTON_SELECTED);
+        
+        start_button  = new UIButton(Res.menu_play,   100, 200, button_paint);
+        config_button = new UIButton(Res.menu_config, 100, 350, button_paint);
+        exit_button   = new UIButton(Res.menu_exit,   100, 500, button_paint);
+        
+        back_button     = new UIButton(Res.menu_back,     100, 200, button_paint);
+        direct_button   = new UIButton(Res.menu_manual,   100, 350, InputManager.working_mode == 0 ? selected_button_paint : button_paint);
+        joystick_button = new UIButton(Res.menu_joystick, 100, 500, InputManager.working_mode == 1 ? selected_button_paint : button_paint);
         
         begin_message = new UIImage(Res.begin_message,
                         (480 / 2) - (Res.begin_message.getWidth() / 2),
@@ -378,6 +398,56 @@ public class GameLoopThread extends Thread
         {
             case MainMenu:
                 BackgroundStarsParticleSystem.slowmo = true;
+                if ( InputManager.wasPressed() )
+                {
+                    InputManager.resetPress();
+                    final float x = InputManager.pointer_x;
+                    final float y = InputManager.pointer_y;
+                    
+                    if ( start_button.rect.contains(x, y) )
+                    {
+                        logicState = GameState.Init;
+                    }
+                    else if ( config_button.rect.contains(x, y) )
+                    {
+                        logicState = GameState.ConfigControl;
+                    }
+                    else if ( exit_button.rect.contains(x, y) )
+                    {
+                        final Intent intent = new Intent(Intent.ACTION_MAIN);
+                        intent.addCategory(Intent.CATEGORY_HOME);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        view.ctx.startActivity(intent);
+                    }
+                    
+                }
+                break;
+                
+            case ConfigControl:
+                BackgroundStarsParticleSystem.slowmo = true;
+                if ( InputManager.wasPressed() )
+                {
+                    InputManager.resetPress();
+                    final float x = InputManager.pointer_x;
+                    final float y = InputManager.pointer_y;
+                    
+                    if ( back_button.rect.contains(x, y) )
+                    {
+                        logicState = GameState.MainMenu;
+                    }
+                    else if ( direct_button.rect.contains(x, y) )
+                    {
+                        InputManager.setNormalMode();
+                        direct_button.paint = selected_button_paint;
+                        joystick_button.paint = button_paint;
+                    }
+                    else if ( joystick_button.rect.contains(x, y) )
+                    {
+                        InputManager.setJoystickMode();
+                        direct_button.paint = button_paint;
+                        joystick_button.paint = selected_button_paint;
+                    }
+                }
                 break;
 
             case Init:
@@ -570,6 +640,21 @@ public class GameLoopThread extends Thread
                 ds.addUI(start_button);
                 ds.addUI(config_button);
                 ds.addUI(exit_button);
+                
+                fps_number.value = (int)ds.last_fps;
+                ds.addUI(fps_number);
+                
+                break;
+                
+            case ConfigControl:
+                ds.reset();
+                states.interpolParticles(last_frame_time);
+
+                ds.addLayer(states.backgroundStars);
+
+                ds.addUI(back_button);
+                ds.addUI(direct_button);
+                ds.addUI(joystick_button);
                 
                 fps_number.value = (int)ds.last_fps;
                 ds.addUI(fps_number);

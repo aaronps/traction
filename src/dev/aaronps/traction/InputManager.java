@@ -12,11 +12,11 @@ public class InputManager
     /**
      * Working modes of the input manager: 0 - normal 1 - joystick
      */
-    private static int working_mode = 0;
+    public  static int working_mode = 0;
     private static float joystick_x = 0;
     private static float joystick_y = 0;
-    private static float pointer_x = 0;
-    private static float pointer_y = 0;
+    public  static float pointer_x = 0;
+    public  static float pointer_y = 0;
     private static float speed = 0;
     private static boolean pressed = false;
 

@@ -40,6 +40,10 @@ public class Res
     public static Bitmap menu_play = null;
     public static Bitmap menu_config = null;
     public static Bitmap menu_exit = null;
+    
+    public static Bitmap menu_back = null;
+    public static Bitmap menu_manual = null;
+    public static Bitmap menu_joystick = null;
 
     private static Bitmap createMenuButton(final String text, final Paint paint)
     {
@@ -48,7 +52,7 @@ public class Res
                                              Bitmap.Config.ARGB_8888);
 
         final Canvas c = new Canvas(b);
-        c.drawColor(Config.MENU_BUTTON_BACKGROUND);
+//        c.drawColor(Config.MENU_BUTTON_BACKGROUND);
         c.drawText( text,
                     Config.MENU_BUTTON_WIDTH / 2,
                     Config.MENU_BUTTON_HEIGHT / 2 + Config.MENU_BUTTON_TEXT_SIZE / 3,
@@ -74,6 +78,10 @@ public class Res
         menu_play = createMenuButton("开始", paint);
         menu_config = createMenuButton("设置", paint);
         menu_exit = createMenuButton("退出", paint);
+        
+        menu_back = createMenuButton("Back", paint);
+        menu_manual = createMenuButton("Direct", paint);
+        menu_joystick = createMenuButton("Joystick", paint);
 
     }
 
