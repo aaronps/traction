@@ -5,6 +5,9 @@ import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
 import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
+import dev.aaronps.traction.ui.UIElement;
+import dev.aaronps.traction.ui.UIImage;
+import dev.aaronps.traction.ui.UINumber;
 
 public class GameLoopThread extends Thread
 {
@@ -20,15 +23,39 @@ public class GameLoopThread extends Thread
     private final GameView view;
     private final States states;
     private boolean running = false;
-
+    
     private GameState logicState = GameState.Init;
 
     private final InputManager.MoveCommand moveCommand = new InputManager.MoveCommand();
 
+    private final UIElement start_button;
+    private final UIElement config_button;
+    private final UIElement exit_button;
+    private final UIElement begin_message;
+    private final UIElement death_message;
+    
+    private final UINumber fps_number;
+    private final UINumber alive_time_number;
+    
     public GameLoopThread(GameView view)
     {
         this.view = view;
         states = new States(Config.MAX_DEBRIL_COUNT);
+        
+        start_button  = new UIImage(GameResources.menu_play,   100, 200);
+        config_button = new UIImage(GameResources.menu_config, 100, 350);
+        exit_button   = new UIImage(GameResources.menu_exit,   100, 500);
+        
+        begin_message = new UIImage(GameResources.begin_message,
+                        (480 / 2) - (GameResources.begin_message.getWidth() / 2),
+                        (800 / 2) - (GameResources.begin_message.getHeight() * 2));
+        
+        death_message = new UIImage(GameResources.death_message,
+                        (480 / 2) - (GameResources.death_message.getWidth() / 2),
+                        (800 / 2) - (GameResources.death_message.getHeight() * 2));
+        
+        fps_number = new UINumber(0, 472, 0, 2);
+        alive_time_number = new UINumber(3, 240, 0, 1);
     }
 
     public void setRunning(boolean run)
@@ -328,9 +355,9 @@ public class GameLoopThread extends Thread
                         accumulator -= Config.DELAY_BETWEEN_LOGICS;
                     }
 
-                    interpol(1.0f, lftime);
-
                     states.draw_state.last_fps = last_second_fps_count;
+                    
+                    interpol(1.0f, lftime);
 
                     view.drawState(c, states.draw_state);
                     ++fps_count;
@@ -530,10 +557,13 @@ public class GameLoopThread extends Thread
 
                 ds.addLayer(states.backgroundStars);
 
-                ds.addUI(GameResources.menu_play, 100, 200);
-                ds.addUI(GameResources.menu_config, 100, 350);
-                ds.addUI(GameResources.menu_exit, 100, 500);
-
+                ds.addUI(start_button);
+                ds.addUI(config_button);
+                ds.addUI(exit_button);
+                
+                fps_number.value = (int)ds.last_fps;
+                ds.addUI(fps_number);
+                
                 break;
 
             case ReadyToStart:
@@ -552,9 +582,13 @@ public class GameLoopThread extends Thread
                 ds.addLayer(states.sparks);
 
                 states.draw_state.alive_time = 0;
-                states.draw_state.addUI(GameResources.begin_message,
-                        (480 / 2) - (GameResources.begin_message.getWidth() / 2),
-                        (800 / 2) - (GameResources.begin_message.getHeight() * 2));
+                ds.addUI(begin_message);
+                
+                fps_number.value = (int)ds.last_fps;
+                ds.addUI(fps_number);
+
+                alive_time_number.value = 0;
+                ds.addUI(alive_time_number);
 
                 break;
 
@@ -573,6 +607,12 @@ public class GameLoopThread extends Thread
                 ds.addLayer(states.thrustParticles);
                 ds.addLayer(states.sprite_layer);
                 ds.addLayer(states.sparks);
+                
+                fps_number.value = (int)ds.last_fps;
+                ds.addUI(fps_number);
+                
+                alive_time_number.value = (int)(ds.alive_time * 1000f);
+                ds.addUI(alive_time_number);
 
                 break;
 
@@ -589,10 +629,13 @@ public class GameLoopThread extends Thread
                 ds.addLayer(states.explosions);
                 ds.addLayer(states.sprite_layer);
 
-                ds.addUI(GameResources.death_message,
-                        (480 / 2) - (GameResources.death_message.getWidth() / 2),
-                        (800 / 2) - (GameResources.death_message.getHeight() * 2));
-
+                ds.addUI(death_message);
+                
+                fps_number.value = (int)ds.last_fps;
+                ds.addUI(fps_number);
+                
+                alive_time_number.value = (int)(ds.alive_time * 1000f);
+                ds.addUI(alive_time_number);
                 break;
         }
     }

@@ -2,14 +2,15 @@ package dev.aaronps.traction;
 
 import android.graphics.Bitmap;
 import dev.aaronps.traction.gamelayers.GameLayer;
+import dev.aaronps.traction.ui.UIElement;
 
 public class DrawState
 {
-    public static final int TOP_LAYER_MAX_SPRITES = 5;
-    public Sprite[] topLayer;
-    public int topLayerCount;
+    public static final int MAX_UI_ELEMENTS = 5;
+    public UIElement[] uiElements;
+    public int uiElementCount;
 
-    public long alive_time;
+    public float alive_time;
     public long last_fps;
 
     private static final int MAX_GAME_LAYERS = 5;
@@ -21,21 +22,17 @@ public class DrawState
         game_layers = new GameLayer[MAX_GAME_LAYERS];
         game_layer_count = 0;
 
-        topLayerCount = 0;
-        topLayer = new Sprite[TOP_LAYER_MAX_SPRITES];
-        for (int n = 0; n < TOP_LAYER_MAX_SPRITES; n++)
-        {
-            topLayer[n] = new Sprite();
-        }
+        uiElementCount = 0;
+        uiElements = new UIElement[MAX_UI_ELEMENTS];
 
-        alive_time = 0;
+        alive_time = 0f;
         last_fps = 0;
     }
 
     public final void reset()
     {
         game_layer_count = 0;
-        topLayerCount = 0;
+        uiElementCount = 0;
     }
 
     public final void addLayer(final GameLayer layer)
@@ -43,11 +40,8 @@ public class DrawState
         game_layers[game_layer_count++] = layer;
     }
 
-    public final void addUI(final Bitmap image, final float x, final float y)
+    public final void addUI(final UIElement ui)
     {
-        final Sprite s = topLayer[topLayerCount++];
-        s.image = image;
-        s.x = x;
-        s.y = y;
+        uiElements[uiElementCount++] = ui;
     }
 }

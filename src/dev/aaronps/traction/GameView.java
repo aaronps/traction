@@ -3,17 +3,16 @@ package dev.aaronps.traction;
 import java.io.IOException;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Rect;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import dev.aaronps.traction.gamelayers.GameLayer;
+import dev.aaronps.traction.ui.UIElement;
 
 public class GameView extends SurfaceView
 {
@@ -24,17 +23,6 @@ public class GameView extends SurfaceView
 
     Matrix viewMatrix = new Matrix();
     Matrix uiMatrix = new Matrix();
-
-    static int[] static_decimals = new int[3];
-    static int[] static_inte = new int[20];
-
-    static int NUMBER_WIDTH = 24;
-    static int NUMBER_HEIGHT = 32;
-    static int DOT_WIDTH = 16;
-
-    // need to set the font size here
-    Rect number_src = new Rect(0, 0, 24, 32);
-    Rect number_dst = new Rect(0, 0, 24, 32);
 
     int surf_width = 0;
     int surf_height = 0;
@@ -47,6 +35,20 @@ public class GameView extends SurfaceView
     {
         super(context);
         ctx = context;
+        
+        System.out.println("Loading assets");
+
+        try
+        {
+            GameResources.loadResources(context.getAssets());
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        System.out.println("Assets loaded");
 
         gameLoopThread = new GameLoopThread(this);
         holder = getHolder();
@@ -109,19 +111,6 @@ public class GameView extends SurfaceView
 
             }
         });
-
-        System.out.println("Loading assets");
-
-        try
-        {
-            GameResources.loadResources(context.getAssets());
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
     }
 
     int pressing_id = -1;
@@ -205,14 +194,13 @@ public class GameView extends SurfaceView
 
         canvas.setMatrix(uiMatrix);
 
-        if (state.topLayerCount > 0)
+        if (state.uiElementCount > 0)
         {
-            final int tc = state.topLayerCount;
-            final Sprite[] ts = state.topLayer;
-            for (int n = 0; n < tc; n++)
+            final int c = state.uiElementCount;
+            final UIElement[] elements = state.uiElements;
+            for (int n = 0; n < c; n++)
             {
-                final Sprite s = ts[n];
-                canvas.drawBitmap(s.image, s.x, s.y, null);
+                elements[n].draw(canvas);
             }
         }
     }
@@ -231,95 +219,15 @@ public class GameView extends SurfaceView
 
         canvas.setMatrix(uiMatrix);
 
-        if (state.topLayerCount > 0)
+        if (state.uiElementCount > 0)
         {
-            final int tc = state.topLayerCount;
-            final Sprite[] ts = state.topLayer;
-            for (int n = 0; n < tc; n++)
+            final int c = state.uiElementCount;
+            final UIElement[] elements = state.uiElements;
+            for (int n = 0; n < c; n++)
             {
-                final Sprite s = ts[n];
-                canvas.drawBitmap(s.image, s.x, s.y, null);
+                elements[n].draw(canvas);
             }
         }
-
-        {
-            final int[] decimals = static_decimals;
-            final int[] inte = static_inte;
-
-            int maxinte = 0;
-            int tmp = (int) (state.alive_time / 1000000); // from ns to ms
-
-            decimals[2] = tmp % 10;
-            tmp /= 10;
-            decimals[1] = tmp % 10;
-            tmp /= 10;
-            decimals[0] = tmp % 10;
-            tmp /= 10;
-
-            do
-            {
-                inte[maxinte++] = tmp % 10;
-                tmp /= 10;
-            } while (tmp > 0);
-
-            final int total_chars = 3 + maxinte;
-            final int total_draw_len = total_chars * DOT_WIDTH + DOT_WIDTH;
-
-            final Rect src = number_src;
-            final Rect dst = number_dst;
-
-            final int soff = virtual_width / 2 - total_draw_len / 2;
-
-            dst.offsetTo(soff, 0);
-
-            final Bitmap font = GameResources.numbers_24x32;
-
-	        // NOTE: offset by DOT_WIDTH makes numbers nicely packed!!
-            do
-            {
-                src.offsetTo(inte[--maxinte] * NUMBER_WIDTH, 0);
-                canvas.drawBitmap(font, src, dst, null);
-                dst.offset(DOT_WIDTH, 0);
-            } while (maxinte > 0);
-
-            // note: some part of the dot is not drawn, but who cares, don't know about performance
-            src.offsetTo(10 * NUMBER_WIDTH, 0);
-            canvas.drawBitmap(font, src, dst, null);
-            dst.offset(DOT_WIDTH / 2, 0);
-
-            src.offsetTo(decimals[0] * NUMBER_WIDTH, 0);
-            canvas.drawBitmap(font, src, dst, null);
-            dst.offset(DOT_WIDTH, 0);
-
-            src.offsetTo(decimals[1] * NUMBER_WIDTH, 0);
-            canvas.drawBitmap(font, src, dst, null);
-            dst.offset(DOT_WIDTH, 0);
-
-            src.offsetTo(decimals[2] * NUMBER_WIDTH, 0);
-            canvas.drawBitmap(font, src, dst, null);
-
-        	// DRAW FPS
-            tmp = (int) state.last_fps;
-            do
-            {
-                inte[maxinte++] = tmp % 10;
-                tmp /= 10;
-            } while (tmp > 0);
-
-            final int fps_draw_len = maxinte * DOT_WIDTH + DOT_WIDTH;
-
-            dst.offsetTo(virtual_width - fps_draw_len, 0);
-
-            do
-            {
-                src.offsetTo(inte[--maxinte] * NUMBER_WIDTH, 0);
-                canvas.drawBitmap(font, src, dst, null);
-                dst.offset(DOT_WIDTH, 0);
-            } while (maxinte > 0);
-
-	        // end draw fps
-        }
-
     }
 
 }
