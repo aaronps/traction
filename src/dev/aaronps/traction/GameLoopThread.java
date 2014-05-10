@@ -13,18 +13,19 @@ public class GameLoopThread extends Thread
 {
     private static enum GameState
     {
-        MainMenu, Init, EnterStart, ReadyToStart, Game, EnterDeath, ReducingDeath, Death;
+        MainMenu, Init, EnterStart, ReadyToStart,
+        Game, EnterDeath, ReducingDeath, Death;
     }
 
     private static final Rect shipRect = new Rect();
-    private static final Rect debrilRect = new Rect();
+    private static final Rect deRect = new Rect();
     private static final Rect intersectRect = new Rect();
 
     private final GameView view;
     private final States states;
     private boolean running = false;
     
-    private GameState logicState = GameState.Init;
+    private GameState logicState = GameState.MainMenu;
 
     private final InputManager.MoveCommand moveCommand = new InputManager.MoveCommand();
 
@@ -42,17 +43,17 @@ public class GameLoopThread extends Thread
         this.view = view;
         states = new States(Config.MAX_DEBRIL_COUNT);
         
-        start_button  = new UIImage(GameResources.menu_play,   100, 200);
-        config_button = new UIImage(GameResources.menu_config, 100, 350);
-        exit_button   = new UIImage(GameResources.menu_exit,   100, 500);
+        start_button  = new UIImage(Res.menu_play,   100, 200);
+        config_button = new UIImage(Res.menu_config, 100, 350);
+        exit_button   = new UIImage(Res.menu_exit,   100, 500);
         
-        begin_message = new UIImage(GameResources.begin_message,
-                        (480 / 2) - (GameResources.begin_message.getWidth() / 2),
-                        (800 / 2) - (GameResources.begin_message.getHeight() * 2));
+        begin_message = new UIImage(Res.begin_message,
+                        (480 / 2) - (Res.begin_message.getWidth() / 2),
+                        (800 / 2) - (Res.begin_message.getHeight() * 2));
         
-        death_message = new UIImage(GameResources.death_message,
-                        (480 / 2) - (GameResources.death_message.getWidth() / 2),
-                        (800 / 2) - (GameResources.death_message.getHeight() * 2));
+        death_message = new UIImage(Res.death_message,
+                        (480 / 2) - (Res.death_message.getWidth() / 2),
+                        (800 / 2) - (Res.death_message.getHeight() * 2));
         
         fps_number = new UINumber(0, 472, 0, 2);
         alive_time_number = new UINumber(3, 240, 0, 1);
@@ -102,7 +103,9 @@ public class GameLoopThread extends Thread
                     cur.acceleration = 0;
                 }
                 else if (cur.speed <= cur.min_speed && prev.acceleration < 0)
-                { // TODO bug, if the speed was lower when started to increase, it will keep at min_speed
+                {
+                    // TODO bug, if the speed was lower when started to increase,
+                    // it will keep at min_speed
                     cur.speed = cur.min_speed;
                     cur.acceleration = 0;
                 }
@@ -157,25 +160,27 @@ public class GameLoopThread extends Thread
     private boolean shipCollisionLogic(final Ship ship, final Debril[] debrils)
     {
         final Rect ship_rect = shipRect;
-        final Rect debril_rect = debrilRect;
+        final Rect debril_rect = deRect;
         final Rect intersectionRect = intersectRect;
 
-        ship_rect.offsetTo((int) ship.x - GameResources.ship_offset_x, (int) ship.y - GameResources.ship_offset_y);
+        ship_rect.offsetTo( (int) ship.x - Res.ship_offset_x,
+                            (int) ship.y - Res.ship_offset_y);
 
         final int e = debrils.length;
         for (int n = 0; n < e; n++)
         {
             final Debril cur = debrils[n];
 
-            debril_rect.offsetTo((int) cur.x - GameResources.debril_offset_x, (int) cur.y - GameResources.debril_offset_y);
+            debril_rect.offsetTo( (int) cur.x - Res.debril_offset_x,
+                                  (int) cur.y - Res.debril_offset_y);
 
             if (intersectionRect.setIntersect(ship_rect, debril_rect))
             {
-                if (GameResources.shipMask.collidesWith(
+                if (Res.shipMask.collidesWith(
                         intersectionRect.left - ship_rect.left,
                         intersectionRect.top - ship_rect.top,
                         intersectionRect.height(),
-                        GameResources.debrilMask,
+                        Res.debrilMask,
                         intersectionRect.left - debril_rect.left,
                         intersectionRect.top - debril_rect.top))
                 {
@@ -199,38 +204,40 @@ public class GameLoopThread extends Thread
         for (int n = 0; n < e; n++)
         {
             final Debril debril = debrils[n];
-            final float shield_debril_dist_x = shield_x - debril.x;
-            final float shield_debril_dist_y = shield_y - debril.y;
-            final float shield_debril_dist_sq = shield_debril_dist_x * shield_debril_dist_x + shield_debril_dist_y * shield_debril_dist_y;
+            final float sd_dist_x = shield_x - debril.x;
+            final float sd_dist_y = shield_y - debril.y;
+            final float shield_debril_dist_sq = sd_dist_x * sd_dist_x
+                                              + sd_dist_y * sd_dist_y;
 
             if (shield_debril_dist_sq <= Config.COMBINED_RADII_SQ)
             {
-                final Debril prev_debril = prev_debrils[n];
+                final Debril p_debril = prev_debrils[n];
 
-                final float C_x = shield_x - prev_debril.x;
-                final float C_y = shield_y - prev_debril.y;
-                final float D_col = prev_debril.dir_x * C_x + prev_debril.dir_y * C_y;
+                final float C_x = shield_x - p_debril.x;
+                final float C_y = shield_y - p_debril.y;
+                final float D_col = p_debril.dir_x * C_x + p_debril.dir_y * C_y;
 
                 // the ball might be already inside the shield, if so, push it out
                 if (D_col <= 0)
                 {
-                    float from_shield_to_debril_x = prev_debril.x - shield_x;
-                    float from_shield_to_debril_y = prev_debril.y - shield_y;
-                    final float fstd = (float) Math.sqrt(from_shield_to_debril_x * from_shield_to_debril_x + from_shield_to_debril_y * from_shield_to_debril_y);
-                    from_shield_to_debril_x /= fstd;
-                    from_shield_to_debril_y /= fstd;
+                    float shield2debril_x = p_debril.x - shield_x;
+                    float shield2debril_y = p_debril.y - shield_y;
+                    final float fstd = (float) Math.sqrt( shield2debril_x * shield2debril_x
+                                                        + shield2debril_y * shield2debril_y);
+                    shield2debril_x /= fstd;
+                    shield2debril_y /= fstd;
 
-                    final float nx = shield_x + from_shield_to_debril_x * Config.COMBINED_RADII;
-                    final float ny = shield_y + from_shield_to_debril_y * Config.COMBINED_RADII;
+                    final float nx = shield_x + shield2debril_x * Config.COMBINED_RADII;
+                    final float ny = shield_y + shield2debril_y * Config.COMBINED_RADII;
 
                     debril.x = nx;
                     debril.y = ny;
-                    debril.dir_x = from_shield_to_debril_x;
-                    debril.dir_y = from_shield_to_debril_y;
+                    debril.dir_x = shield2debril_x;
+                    debril.dir_y = shield2debril_y;
 
                     ship.shield_active = true;
                     ship.shield_counter = Math.round(Config.LPS) / 2;
-                    SoundManager.player.play(GameResources.shieldHitSound);
+                    SoundManager.player.play(Res.shieldHitSound);
                     continue;
                 }
 
@@ -248,22 +255,22 @@ public class GameLoopThread extends Thread
                 final float Travel_dist = D_col - extra_move;
 
                 // point of collision
-                debril.x = prev_debril.x + prev_debril.dir_x * Travel_dist;
-                debril.y = prev_debril.y + prev_debril.dir_y * Travel_dist;
+                debril.x = p_debril.x + p_debril.dir_x * Travel_dist;
+                debril.y = p_debril.y + p_debril.dir_y * Travel_dist;
 
-                final float vec_from_shield_x = (debril.x - shield_x) / Config.COMBINED_RADII;
-                final float vec_from_shield_y = (debril.y - shield_y) / Config.COMBINED_RADII;
+                final float v_from_shield_x = (debril.x - shield_x) / Config.COMBINED_RADII;
+                final float v_from_shield_y = (debril.y - shield_y) / Config.COMBINED_RADII;
 
-                states.addSpark(shield_x + vec_from_shield_x * Config.SHIELD_RADII,
-                                shield_y + vec_from_shield_y * Config.SHIELD_RADII,
-                                vec_from_shield_x, vec_from_shield_y, 0);
+                states.addSpark(shield_x + v_from_shield_x * Config.SHIELD_RADII,
+                                shield_y + v_from_shield_y * Config.SHIELD_RADII,
+                                v_from_shield_x, v_from_shield_y, 0);
 
                 // invert previous direction
-                final float ipdir_x = -prev_debril.dir_x;
-                final float ipdir_y = -prev_debril.dir_y;
+                final float ipdir_x = -p_debril.dir_x;
+                final float ipdir_y = -p_debril.dir_y;
 
-                final float A = vec_from_shield_y;
-                final float B = -vec_from_shield_x;
+                final float A = v_from_shield_y;
+                final float B = -v_from_shield_x;
                 final float D = A * ipdir_x + B * ipdir_y;
 
                 final float ndir_x = ipdir_x - 2 * A * D;
@@ -272,24 +279,15 @@ public class GameLoopThread extends Thread
                 debril.dir_x = ndir_x;
                 debril.dir_y = ndir_y;
 
-//                debril.speed += Config.ACCEL_PER_SECOND;
-//                if ( debril.speed > Config.MAX_SPEED)
-//                {
-//                    debril.speed = Config.MAX_SPEED;
-//                }
-//                debril.speed += Config.ACCEL_PER_LOGIC * 2;
-//                if ( debril.speed > Config.MAX_SPEED_LOGIC )
-//                {
-//                    debril.speed = Config.MAX_SPEED_LOGIC;
-//                }
                 // this moves the debril the "extra" that it has to move after
                 // adjusting the direction
                 if (Travel_dist < 0)
                 {
-                    // XXX after test, this happens, don't know if move or not the debril
-//					System.out.println("WTF too big move-------------------------------------");
-//					debril.x += debril.dir_x * (debril.speed);
-//					debril.y += debril.dir_y * (debril.speed);
+                    // XXX after test, this happens,
+                    // don't know if move or not the debril
+//                    System.out.println("WTF too big move-------------");
+//                    debril.x += debril.dir_x * (debril.speed);
+//                    debril.y += debril.dir_y * (debril.speed);
                 }
                 else
                 {
@@ -301,7 +299,7 @@ public class GameLoopThread extends Thread
                 ship.shield_active = true;
                 ship.shield_counter = Math.round(Config.LPS) / 2;
 
-                SoundManager.player.play(GameResources.shieldHitSound);
+                SoundManager.player.play(Res.shieldHitSound);
             }
         }
     }
@@ -312,11 +310,11 @@ public class GameLoopThread extends Thread
         int fps_count = 0;
         long last_frame_start = System.nanoTime();
         long accumulator = -1;
-        long fps_count_start_time = last_frame_start; // System.currentTimeMillis();
+        long fps_count_start = last_frame_start;
         long last_second_fps_count = 0;
 
-        shipRect.set(0, 0, GameResources.shipMask.getWidth(), GameResources.shipMask.getHeight());
-        debrilRect.set(0, 0, GameResources.debrilMask.getWidth(), GameResources.debrilMask.getHeight());
+        shipRect.set(0, 0, Res.shipMask.getWidth(), Res.shipMask.getHeight());
+        deRect.set(0, 0, Res.debrilMask.getWidth(), Res.debrilMask.getHeight());
 
         final SurfaceHolder holder = view.getHolder();
         while (running)
@@ -326,30 +324,32 @@ public class GameLoopThread extends Thread
             {
                 try
                 {
-                    final long this_frame_start = System.nanoTime();
+                    final long frame_start = System.nanoTime();
                     if (accumulator < 0)
                     {
-                        last_frame_start = this_frame_start;
+                        last_frame_start = frame_start;
                         accumulator = 0;
                     }
 
-                    final long fps_time = this_frame_start - fps_count_start_time;
+                    final long fps_time = frame_start - fps_count_start;
                     if (fps_time >= 1000000000) // 1s in ns
                     {
                         last_second_fps_count = fps_count;
-                        fps_count_start_time = this_frame_start;
+                        fps_count_start = frame_start;
                         fps_count = 0;
                     }
 
-                    final long last_frame_time = this_frame_start - last_frame_start;
+                    final long last_frame_time = frame_start - last_frame_start;
 
-                    final float lftime = last_frame_time / 1000000000f; // from ns to s
+                    // from ns to s
+                    final float lftime = last_frame_time / 1000000000f;
 //                doLogic( lftime );
 //                interpol( 1.0f, last_frame_time );
 
                     accumulator += last_frame_time;
                     int loopcount = 0;
-                    while (++loopcount <= Config.MAX_LOGIC_LOOP && accumulator >= Config.DELAY_BETWEEN_LOGICS)
+                    while ( ++loopcount <= Config.MAX_LOGIC_LOOP
+                            && accumulator >= Config.DELAY_BETWEEN_LOGICS )
                     {
                         doLogic(Config.LOGIC_FRAMETIME_S);
                         accumulator -= Config.DELAY_BETWEEN_LOGICS;
@@ -362,7 +362,7 @@ public class GameLoopThread extends Thread
                     view.drawState(c, states.draw_state);
                     ++fps_count;
 
-                    last_frame_start = this_frame_start;
+                    last_frame_start = frame_start;
                 }
                 finally
                 {
@@ -405,7 +405,8 @@ public class GameLoopThread extends Thread
                 {
                     states.current.ship.shield_counter = states.prev.ship.shield_counter - 1;
                     states.current.ship.shield_active = states.current.ship.shield_counter > 0;
-                } else
+                }
+                else
                 {
                     states.current.ship.shield_active = false;
                 }
@@ -436,7 +437,8 @@ public class GameLoopThread extends Thread
                     states.current.ship.speed = moveCommand.speed / time;
                 }
 
-                ThrustParticleSystem.active = InputManager.wasPressed() || BackgroundStarsParticleSystem.time_rate < 1.0f;
+                ThrustParticleSystem.active = InputManager.wasPressed()
+                                            || BackgroundStarsParticleSystem.time_rate < 1.0f;
 
                 states.swapStates();
 
@@ -461,7 +463,8 @@ public class GameLoopThread extends Thread
                 {
                     shieldCollisionLogic(ship, states.current.debrils, states.prev.debrils, time);
                 }
-//                  else // enable "else" if ship explodes with shield (better find the logic error)
+                // enable "else" if ship explodes with shield(or find the error)
+//                  else 
                 if (shipCollisionLogic(ship, states.current.debrils))
                 {
                     final Ship pship = states.prev.ship;
@@ -469,8 +472,13 @@ public class GameLoopThread extends Thread
                     final float dy = pship.dir_y * pship.dir_y;
                     final float sspeed = (float) Math.sqrt(dx + dy);
 
-                    states.addExplosion(ship.x, ship.y, pship.dir_x / sspeed, pship.dir_y / sspeed, (float) Math.min(Config.MAX_SPEED / 4, sspeed * (Config.LPS / 4)));
-                    SoundManager.player.play(GameResources.explosionSound); // volume shall be 1.0
+                    states.addExplosion(ship.x, ship.y,
+                                        pship.dir_x/sspeed, pship.dir_y/sspeed,
+                                        (float) Math.min(Config.MAX_SPEED / 4,
+                                        sspeed * (Config.LPS / 4)));
+                    
+                    // volume shall be 1.0
+                    SoundManager.player.play(Res.explosionSound);
                     logicState = GameState.EnterDeath;
                     InputManager.resetPress();
                 }
@@ -494,10 +502,12 @@ public class GameLoopThread extends Thread
                     if (debrils[i].speed > debrils[i].max_speed)
                     {
                         debrils[i].acceleration = -Config.ACCEL_PER_SECOND / 4;
-                    } else if (debrils[i].speed < debrils[i].min_speed)
+                    }
+                    else if (debrils[i].speed < debrils[i].min_speed)
                     {
                         debrils[i].acceleration = Config.ACCEL_PER_SECOND / 4;
-                    } else
+                    }
+                    else
                     {
                         debrils[i].acceleration = 0;
                     }
@@ -535,8 +545,8 @@ public class GameLoopThread extends Thread
             case Death:
                 states.swapStates();
 
-//                debrilMoveLogic(states.prev.debrils, states.current.debrils, time);
-//              if ( st == GameState.Death && pressed )
+//              debrilMoveLogic(states.prev.debrils, states.current.debrils, time);
+//                if ( st == GameState.Death && pressed )
                 if (InputManager.wasPressed())
                 {
                     logicState = GameState.EnterStart;
@@ -655,19 +665,16 @@ public class GameLoopThread extends Thread
             d.dir_y = (float) Math.sin(dirangle);
 
             d.min_speed = Config.REDUCED_SPEED;
-            d.max_speed = (float) Math.random() * (Config.MAX_SPEED / 2) + Config.MAX_SPEED / 2;
-//            d.min_speed = Config.REDUCED_SPEED_LOGIC;
-//            d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
+            d.max_speed = (float) Math.random() * (Config.MAX_SPEED / 2)
+                        + Config.MAX_SPEED / 2;
             if (d.speed > d.max_speed)
             {
-                // -ACCEL_PER_LOGIC was wrong, because it would slow down to minimum!
-//                d.acceleration = -ACCEL_PER_LOGIC;
                 d.acceleration = 0;
                 d.speed = d.max_speed;
-            } else
+            }
+            else
             {
                 d.acceleration = Config.ACCEL_PER_SECOND;
-//                d.acceleration = Config.ACCEL_PER_LOGIC;
             }
         }
     }
@@ -700,14 +707,11 @@ public class GameLoopThread extends Thread
             d.dir_y = (float) Math.sin(dirangle);
 
             d.min_speed = Config.REDUCED_SPEED;
-            d.max_speed = (float) Math.random() * (Config.MAX_SPEED / 2) + Config.MAX_SPEED / 2;
+            d.max_speed = (float) Math.random() * (Config.MAX_SPEED / 2)
+                        + Config.MAX_SPEED / 2;
             d.speed = 0;
             d.acceleration = Config.ACCEL_PER_SECOND;
 
-//            d.min_speed = Config.REDUCED_SPEED_LOGIC;
-//            d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
-//            d.speed = 0;
-//            d.acceleration = Config.ACCEL_PER_LOGIC;
         }
 
         states.copyCurrentToPrev();

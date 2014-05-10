@@ -79,17 +79,17 @@ public class States
         final float x = (current.ship.x * c_rate + prev.ship.x * p_rate);
         final float y = (current.ship.y * c_rate + prev.ship.y * p_rate);
 
-        sprite_layer.add(GameResources.ship,
-                x - GameResources.ship_offset_x,
-                y - GameResources.ship_offset_y);
+        sprite_layer.add(Res.ship,
+                x - Res.ship_offset_x,
+                y - Res.ship_offset_y);
 
         thrustParticles.setShipLocation(x, y);
 
         if (current.ship.shield)
         {
-            sprite_layer.add(current.ship.shield_active ? GameResources.ship_aura_active : GameResources.ship_aura,
-                             x - GameResources.ship_aura_offset_x,
-                             y - GameResources.ship_aura_offset_y);
+            sprite_layer.add(current.ship.shield_active ? Res.ship_aura_active : Res.ship_aura,
+                             x - Res.ship_aura_offset_x,
+                             y - Res.ship_aura_offset_y);
         }
     }
 
@@ -97,15 +97,15 @@ public class States
     {
         final float p_rate = 1.0f - c_rate;
 
-        final Bitmap i = GameResources.debril;
+        final Bitmap i = Res.debril;
         final Debril[] cur_d = current.debrils;
         final Debril[] pre_d = prev.debrils;
 
         for (int n = 0, e = cur_d.length; n < e; n++)
         {
             sprite_layer.add(i,
-                             (cur_d[n].x * c_rate + pre_d[n].x * p_rate) - GameResources.debril_offset_x,
-                             (cur_d[n].y * c_rate + pre_d[n].y * p_rate) - GameResources.debril_offset_y);
+                             (cur_d[n].x * c_rate + pre_d[n].x * p_rate) - Res.debril_offset_x,
+                             (cur_d[n].y * c_rate + pre_d[n].y * p_rate) - Res.debril_offset_y);
         }
     }
 

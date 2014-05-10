@@ -9,7 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-public class GameResources
+public class Res
 {
     public static Bitmap begin_message = null;
     public static Bitmap death_message = null;

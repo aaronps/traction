@@ -2,7 +2,7 @@ package dev.aaronps.traction.gamelayers;
 
 import java.util.Random;
 
-import dev.aaronps.traction.GameResources;
+import dev.aaronps.traction.Res;
 import dev.aaronps.traction.ParticleSystem;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -94,7 +94,7 @@ public class SparkParticleSystem implements ParticleSystem, GameLayer
 
             final float siz = p.alivetime * 4 / p.total_alivetime; // will use double of this size
             r.set(p.x - siz, p.y - siz, p.x + siz, p.y + siz);
-            canvas.drawBitmap(GameResources.yepart, null, r, sparkPaint);
+            canvas.drawBitmap(Res.yepart, null, r, sparkPaint);
 //          canvas.drawBitmap( GameResources.yepart, p.x-8, p.y-8, thrustPaint );
 
 //			final float rad = p.alivetime * 2f / p.total_alivetime;

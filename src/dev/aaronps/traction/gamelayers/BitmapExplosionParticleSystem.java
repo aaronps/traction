@@ -1,6 +1,6 @@
 package dev.aaronps.traction.gamelayers;
 
-import dev.aaronps.traction.GameResources;
+import dev.aaronps.traction.Res;
 import dev.aaronps.traction.ParticleSystem;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -93,7 +93,7 @@ public class BitmapExplosionParticleSystem implements ParticleSystem, GameLayer
     @Override
     public void draw(Canvas canvas)
     {
-        final Bitmap image = GameResources.explosion;
+        final Bitmap image = Res.explosion;
         for (int i = particle_count; i != 0; /* empty */)
         {
             final BitmapExplosionParticle p = particles[--i];

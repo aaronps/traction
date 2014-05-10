@@ -40,7 +40,7 @@ public class GameView extends SurfaceView
 
         try
         {
-            GameResources.loadResources(context.getAssets());
+            Res.loadResources(context.getAssets());
         }
         catch (IOException e)
         {
@@ -177,32 +177,6 @@ public class GameView extends SurfaceView
     {
         // TODO Auto-generated method stub
         return super.onKeyUp(keyCode, event);
-    }
-
-    final void drawMenu(final Canvas canvas, final DrawState state)
-    {
-        canvas.drawColor(Color.BLACK);
-
-        canvas.setMatrix(viewMatrix);
-
-        final int e = state.game_layer_count;
-        final GameLayer[] layers = state.game_layers;
-        for (int i = 0; i < e; i++)
-        {
-            layers[i].draw(canvas);
-        }
-
-        canvas.setMatrix(uiMatrix);
-
-        if (state.uiElementCount > 0)
-        {
-            final int c = state.uiElementCount;
-            final UIElement[] elements = state.uiElements;
-            for (int n = 0; n < c; n++)
-            {
-                elements[n].draw(canvas);
-            }
-        }
     }
 
     final void drawState(final Canvas canvas, final DrawState state)

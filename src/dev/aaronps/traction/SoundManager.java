@@ -73,8 +73,8 @@ public class SoundManager
             final AssetManager am = context.getAssets();
             try
             {
-                GameResources.explosionSound = soundPool.load(am.openFd("DeathFlashCut.ogg"), 0);
-                GameResources.shieldHitSound = soundPool.load(am.openFd("shield-hit2.ogg"), 0);
+                Res.explosionSound = soundPool.load(am.openFd("DeathFlashCut.ogg"), 0);
+                Res.shieldHitSound = soundPool.load(am.openFd("shield-hit2.ogg"), 0);
             }
             catch (IOException e1)
             {

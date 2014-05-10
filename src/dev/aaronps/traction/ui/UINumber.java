@@ -3,7 +3,7 @@ package dev.aaronps.traction.ui;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import dev.aaronps.traction.GameResources;
+import dev.aaronps.traction.Res;
 
 /**
  *
@@ -85,7 +85,7 @@ public class UINumber implements UIElement
             dst.offsetTo(x - total_draw_len, y);
         }
 
-        final Bitmap font = GameResources.numbers_24x32;
+        final Bitmap font = Res.numbers_24x32;
 
         // NOTE: offset by DOT_WIDTH makes numbers nicely packed!!
         
