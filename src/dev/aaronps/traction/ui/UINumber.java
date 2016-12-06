@@ -11,16 +11,9 @@ import dev.aaronps.traction.Res;
  */
 public class UINumber implements UIElement
 {
-    private static final int NUMBER_WIDTH = 24;
-    private static final int NUMBER_HEIGHT = 32;
-    private static final int DOT_WIDTH = 16;
-
+    
     private static final int MAX_DIGITS = 32;
     private static final int[] static_digits = new int[MAX_DIGITS];
-    
-    private static final Rect number_src = new Rect(0, 0, 24, 32);
-    private static final Rect number_dst = new Rect(0, 0, 24, 32);
-    
     public int value;
     public int decimals;
     public int x;
@@ -66,10 +59,10 @@ public class UINumber implements UIElement
             ++total_chars;
         } while (tmp > 0);
         
-        final int total_draw_len = total_chars * DOT_WIDTH;
+        final int total_draw_len = total_chars * Res.NUMBER_WIDTH;
 
-        final Rect src = number_src;
-        final Rect dst = number_dst;
+        final Rect src = Res.number_src;
+        final Rect dst = Res.number_dst;
         
         if ( align == 0 )
         {
@@ -85,7 +78,7 @@ public class UINumber implements UIElement
             dst.offsetTo(x - total_draw_len, y);
         }
 
-        final Bitmap font = Res.numbers_24x32;
+        final Bitmap font = Res.numbers_16x32;
 
         // NOTE: offset by DOT_WIDTH makes numbers nicely packed!!
         
@@ -93,22 +86,22 @@ public class UINumber implements UIElement
         {
             do
             {
-                src.offsetTo(digits[--digit] * NUMBER_WIDTH, 0);
+                src.offsetTo(digits[--digit] * Res.NUMBER_WIDTH, 0);
                 c.drawBitmap(font, src, dst, null);
-                dst.offset(DOT_WIDTH, 0);
+                dst.offset(Res.NUMBER_WIDTH, 0);
             } while ( digit > decimals );
             
             // draw dot
-            src.offsetTo(10 * NUMBER_WIDTH, 0);
+            src.offsetTo(10 * Res.NUMBER_WIDTH + 4, 0);
             c.drawBitmap(font, src, dst, null);
-            dst.offset(DOT_WIDTH / 2, 0);
+            dst.offset(Res.NUMBER_WIDTH/2, 0);
         }
         
         do
         {
-            src.offsetTo(digits[--digit] * NUMBER_WIDTH, 0);
+            src.offsetTo(digits[--digit] * Res.NUMBER_WIDTH, 0);
             c.drawBitmap(font, src, dst, null);
-            dst.offset(DOT_WIDTH, 0);
+            dst.offset(Res.NUMBER_WIDTH, 0);
         } while (digit > 0);
     }
 }

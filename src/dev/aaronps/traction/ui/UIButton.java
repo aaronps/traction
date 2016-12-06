@@ -2,7 +2,7 @@ package dev.aaronps.traction.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 
 /**
@@ -12,20 +12,19 @@ import android.graphics.RectF;
 public class UIButton implements UIElement
 {
     public Bitmap image;
-    public RectF rect;
-    public Paint paint;
+    public Rect src;
+    public RectF dst;
     
-    public UIButton(final Bitmap image, final float x, final float y, final Paint paint)
+    public UIButton(final Bitmap image, final Rect src, final float x, final float y)
     {
         this.image = image;
-        this.paint = paint;
-        rect = new RectF(x, y, x + image.getWidth(), y + image.getHeight());
+        this.src = src;
+        this.dst = new RectF(x, y, x + src.width(), y + src.height());
     }
     
     public void draw(Canvas c)
     {
-        c.drawRect(rect, paint);
-        c.drawBitmap(image, rect.left, rect.top, null);
+        c.drawBitmap(image, src, dst, null);
     }
     
 }

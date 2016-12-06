@@ -1,12 +1,12 @@
 package dev.aaronps.traction.gamelayers;
 
 import dev.aaronps.traction.Res;
-import dev.aaronps.traction.ParticleSystem;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 
-public class BitmapExplosionParticleSystem implements ParticleSystem, GameLayer
+public class BitmapExplosionParticleSystem
 {
     // if image changes, update here
     static final int frame_w = 64;
@@ -42,19 +42,21 @@ public class BitmapExplosionParticleSystem implements ParticleSystem, GameLayer
     static BitmapExplosionParticle[] particles = null;
     static int particle_count = 0;
 
-    public BitmapExplosionParticleSystem()
+    public static void init()
     {
-        particle_count = 0;
-        particles = new BitmapExplosionParticle[MAX_PARTICLES];
-
-        for (int i = MAX_PARTICLES; i != 0; /* empty */)
+        if ( particles == null )
         {
-            particles[--i] = new BitmapExplosionParticle();
+            particle_count = 0;
+            particles = new BitmapExplosionParticle[MAX_PARTICLES];
+
+            for (int i = MAX_PARTICLES; i != 0; /* empty */)
+            {
+                particles[--i] = new BitmapExplosionParticle();
+            }
         }
     }
 
-    @Override
-    public void logic(final float time)
+    public static void logic(final float time)
     {
         for (int i = 0, e = particle_count; i < e; /* emtpy */)
         {
@@ -90,8 +92,7 @@ public class BitmapExplosionParticleSystem implements ParticleSystem, GameLayer
         }
     }
 
-    @Override
-    public void draw(Canvas canvas)
+    public static void draw(Canvas canvas)
     {
         final Bitmap image = Res.explosion;
         for (int i = particle_count; i != 0; /* empty */)
@@ -102,7 +103,7 @@ public class BitmapExplosionParticleSystem implements ParticleSystem, GameLayer
 
     }
 
-    public void add(int x, int y, float dir_x, float dir_y, float speed)
+    public static void add(int x, int y, float dir_x, float dir_y, float speed)
     {
         if (particle_count < MAX_PARTICLES)
         {
@@ -113,6 +114,7 @@ public class BitmapExplosionParticleSystem implements ParticleSystem, GameLayer
             p.speed = speed;
             p.frame.offsetTo(0, 0);
             p.pos.offsetTo(x - frame_w / 2, y - frame_h / 2);
+            Log.i("Explosion", String.format("dir_x=%f dir_y=%f speed=%f", dir_x, dir_y, speed));
         }
     }
 

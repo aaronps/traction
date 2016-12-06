@@ -13,9 +13,9 @@ public class SoundManager
     public static final NormalPlayer normal_player = new NormalPlayer();
     public static Player player = nosound_player;
 
-    static interface Player
+    public static interface Player
     {
-        void play(final int soundId);
+        public void play(final int soundId);
         boolean activate();
         void deactivate();
         boolean load(final Context context);

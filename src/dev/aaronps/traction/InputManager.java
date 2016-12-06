@@ -4,9 +4,9 @@ public class InputManager
 {
     public static class MoveCommand
     {
-        float dir_x;
-        float dir_y;
-        float speed;
+        public float dir_x;
+        public float dir_y;
+        public float speed;
     }
 
     /**
@@ -19,6 +19,7 @@ public class InputManager
     public  static float pointer_y = 0;
     private static float speed = 0;
     private static boolean pressed = false;
+    public static boolean pressing = false;
 
     public static void setNormalMode()
     {
@@ -31,10 +32,16 @@ public class InputManager
         working_mode = 1;
         speed = 0;
     }
+    
+    public static void noMove()
+    {
+        joystick_x = joystick_y = 0;
+    }
 
     public static void pointerPress(final float x, final float y)
     {
         pressed = true;
+        pressing = true;
 
         joystick_x = 0;
         joystick_y = 0;
@@ -48,6 +55,7 @@ public class InputManager
     public static void pointerRelease(final float x, final float y)
     {
         pressed = false;
+        pressing = false;
         speed = 0;
     }
 

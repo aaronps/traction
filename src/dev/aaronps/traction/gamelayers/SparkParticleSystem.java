@@ -3,12 +3,11 @@ package dev.aaronps.traction.gamelayers;
 import java.util.Random;
 
 import dev.aaronps.traction.Res;
-import dev.aaronps.traction.ParticleSystem;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-public class SparkParticleSystem implements ParticleSystem, GameLayer
+public class SparkParticleSystem
 {
     public static class SparkParticle
     {
@@ -43,21 +42,23 @@ public class SparkParticleSystem implements ParticleSystem, GameLayer
 
     private static final RectF drect = new RectF();
 
-    public SparkParticleSystem()
+    public static void init()
     {
-        particles = new SparkParticle[MAX_PARTICLES];
-        for (int i = MAX_PARTICLES; i != 0; /* empty */)
+        if ( particles == null )
         {
-            particles[--i] = new SparkParticle();
-        }
+            particles = new SparkParticle[MAX_PARTICLES];
+            for (int i = MAX_PARTICLES; i != 0; /* empty */)
+            {
+                particles[--i] = new SparkParticle();
+            }
 
-        sparkPaint = new Paint();
-//		sparkPaint.setColor(0xff00bbff); //blue
-//		sparkPaint.setColor(0xffffde00); //yellow center
+            sparkPaint = new Paint();
+//            sparkPaint.setColor(0xff00bbff); //blue
+//            sparkPaint.setColor(0xffffde00); //yellow center
+        }
     }
 
-    @Override
-    public void logic(final float time)
+    public static void logic(final float time)
     {
         for (int i = 0, e = particle_count; i < e; /* emtpy */)
         {
@@ -83,8 +84,7 @@ public class SparkParticleSystem implements ParticleSystem, GameLayer
         }
     }
 
-    @Override
-    public void draw(Canvas canvas)
+    public static void draw(Canvas canvas)
     {
         final RectF r = drect;
         for (int i = particle_count; i != 0; /* emtpy */)
@@ -103,7 +103,8 @@ public class SparkParticleSystem implements ParticleSystem, GameLayer
         }
     }
 
-    public void addSpark(final float x, final float y, final float dir_x, final float dir_y)
+    public static void addSpark(final float x, final float y,
+                                final float dir_x, final float dir_y)
     {
         final double outangle = Math.atan2(dir_y, dir_x) - HALFPI;
         for (int n = 10; n != 0; n--)
