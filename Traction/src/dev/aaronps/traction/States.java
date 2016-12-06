@@ -112,9 +112,8 @@ public class States
 		}
 	}
 	
-	final void interpolParticles(final long frame_time)
+	final void interpolParticles(final float ftime)
 	{
-		final float ftime = frame_time/1000f;
 		backgroundStars.logic(ftime);
 		explosions.logic(ftime);
 		sparks.logic(ftime);
@@ -135,8 +134,6 @@ public class States
 	public void addExplosion(final float x, final float y, final float dir_x, final float dir_y, final float speed)
     {
         explosions.add(Math.round(x), Math.round(y), dir_x, dir_y, speed);
-//      ExplosionParticle p = new ExplosionParticle(Math.round(x), Math.round(y), dir_x, dir_y, ms_speed);
-//      particles[particle_count++] = p;
     }
     
     public void addSpark(final float x, final float y, final float dir_x, final float dir_y, final float speed)

@@ -1,9 +1,10 @@
 package dev.aaronps.traction;
 
-import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
-import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.view.SurfaceHolder;
+import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
+import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
 
 public class GameLoopThread extends Thread
 {
@@ -21,10 +22,9 @@ public class GameLoopThread extends Thread
     private boolean running = false;
     private States states;
     
-    private GameState logicState = GameState.Init;
+    private GameState logicState = GameState.MainMenu;
 
     private final InputManager.MoveCommand moveCommand = new InputManager.MoveCommand();
-    
     
     public GameLoopThread(GameView view)
     {
@@ -38,87 +38,95 @@ public class GameLoopThread extends Thread
     	running = run;
     }
     
-    private static final void shipMoveLogic(final Ship pship, final Ship ship)
+    private static final void shipMoveLogic( final Ship pship,
+                                             final Ship ship,
+                                             final float time )
     {
-    	ship.x = pship.x + pship.dir_x * pship.speed;
-		ship.y = pship.y + pship.dir_y * pship.speed;
-		
-		     if ( ship.x < Config.SHIP_MOVE_AREA.left ) { ship.x = Config.SHIP_MOVE_AREA.left; }
-		else if ( ship.x > Config.SHIP_MOVE_AREA.right) { ship.x = Config.SHIP_MOVE_AREA.right; }
-		
-		     if ( ship.y < Config.SHIP_MOVE_AREA.top) { ship.y = Config.SHIP_MOVE_AREA.top; }
-		else if ( ship.y > Config.SHIP_MOVE_AREA.bottom) { ship.y = Config.SHIP_MOVE_AREA.bottom; }
-		
-		ship.dir_x = ship.dir_y = ship.speed = 0;
+        final float stime = pship.speed * time;
+        ship.x = pship.x + pship.dir_x * stime ;
+        ship.y = pship.y + pship.dir_y * stime;
+        
+             if ( ship.x < Config.SHIP_MOVE_AREA.left ) { ship.x = Config.SHIP_MOVE_AREA.left; }
+        else if ( ship.x > Config.SHIP_MOVE_AREA.right) { ship.x = Config.SHIP_MOVE_AREA.right; }
+        
+             if ( ship.y < Config.SHIP_MOVE_AREA.top)    { ship.y = Config.SHIP_MOVE_AREA.top; }
+        else if ( ship.y > Config.SHIP_MOVE_AREA.bottom) { ship.y = Config.SHIP_MOVE_AREA.bottom; }
+        
+        ship.dir_x = ship.dir_y = ship.speed = 0;
     }
     
-    private static final void debrilMoveLogic(final Debril[] prev_array, final Debril[] cur_array)
+    private static final void debrilMoveLogic( final Debril[] prev_array,
+                                               final Debril[] cur_array,
+                                               final float time )
     {
-    	final int e = prev_array.length;
-    	for ( int n = 0; n < e; n++ )
-		{
-			final Debril prev = prev_array[n];
-			final Debril cur = cur_array[n];
-			
-			cur.max_speed = prev.max_speed;
-			cur.min_speed = prev.min_speed;
-
-			if ( prev.acceleration != 0 )
-			{
-				cur.speed = prev.speed + prev.acceleration;
-				if ( cur.speed >= cur.max_speed && prev.acceleration > 0 )
-				{
-					cur.speed = cur.max_speed;
-					cur.acceleration = 0;
-				}
-				else if ( cur.speed <= cur.min_speed && prev.acceleration < 0 )
-				{
-					cur.speed = cur.min_speed;
-					cur.acceleration = 0;
-				}
-				else
-				{
-					cur.acceleration = prev.acceleration;
-				}
-			}
-			else
-			{
-				cur.speed = prev.speed;
-				cur.acceleration = 0;
-			}
-			/*
-			 * s = ut + 0.5at^2
-			 * 
-			 * s: distance to travel
-			 * t: time
-			 * a: acceleration
-			 * 
-			 */
-			
-			final float half_accel = prev.acceleration / 2;
-			
-			cur.x = prev.x + prev.dir_x * prev.speed + prev.dir_x * half_accel;
-			if (   (cur.x <= Config.WORLD_MIN_X && prev.dir_x < 0)
-				|| (cur.x >= Config.WORLD_MAX_X && prev.dir_x > 0) )
-			{
-				cur.dir_x = -prev.dir_x;
-			}
-			else
-			{
-				cur.dir_x = prev.dir_x;
-			}
-			
-			cur.y = prev.y + prev.dir_y * prev.speed + prev.dir_y * half_accel;
-			if (   (cur.y <= Config.WORLD_MIN_Y && prev.dir_y < 0) 
-				|| (cur.y >= Config.WORLD_MAX_Y && prev.dir_y > 0) )
-			{
-				cur.dir_y = -prev.dir_y;
-			}
-			else
-			{
-				cur.dir_y = prev.dir_y;
-			}
-		}
+        final int e = prev_array.length;
+        for ( int n = 0; n < e; n++ )
+        {
+            final Debril prev = prev_array[n];
+            final Debril cur = cur_array[n];
+            
+            cur.max_speed = prev.max_speed;
+            cur.min_speed = prev.min_speed;
+            
+            if ( prev.acceleration != 0 )
+            {
+                cur.speed = prev.speed + prev.acceleration * time;
+                if ( cur.speed >= cur.max_speed && prev.acceleration > 0 )
+                {
+                    cur.speed = cur.max_speed;
+                    cur.acceleration = 0;
+                }
+                else if ( cur.speed <= cur.min_speed && prev.acceleration < 0 )
+                { // TODO bug, if the speed was lower when started to increase, it will keep at min_speed
+                    cur.speed = cur.min_speed;
+                    cur.acceleration = 0;
+                }
+                else
+                {
+                    cur.acceleration = prev.acceleration;
+                }
+            }
+            else
+            {
+                cur.speed = prev.speed;
+                cur.acceleration = 0;
+            }
+            /*
+             * s = ut + 0.5at^2
+             * 
+             * s: distance to travel
+             * t: time
+             * a: acceleration
+             * 
+             */
+            
+            final float half_accel = prev.acceleration / 2;
+            final float stime = prev.speed * time;
+            final float timesq = time * time;
+            final float astime = half_accel * timesq;
+            
+            cur.x = prev.x + prev.dir_x * stime + prev.dir_x * astime;
+            if (   (cur.x <= Config.WORLD_MIN_X && prev.dir_x < 0)
+                || (cur.x >= Config.WORLD_MAX_X && prev.dir_x > 0) )
+            {
+                cur.dir_x = -prev.dir_x;
+            }
+            else
+            {
+                cur.dir_x = prev.dir_x;
+            }
+            
+            cur.y = prev.y + prev.dir_y * stime + prev.dir_y * astime;
+            if (   (cur.y <= Config.WORLD_MIN_Y && prev.dir_y < 0) 
+                || (cur.y >= Config.WORLD_MAX_Y && prev.dir_y > 0) )
+            {
+                cur.dir_y = -prev.dir_y;
+            }
+            else
+            {
+                cur.dir_y = prev.dir_y;
+            }
+        }
     }
     
     private final boolean shipCollisionLogic(final Ship ship, final Debril[] debrils)
@@ -155,7 +163,7 @@ public class GameLoopThread extends Thread
     	return false;
     }
     
-    private final void shieldCollisionLogic(final Ship ship, final Debril[] debrils, final Debril[] prev_debrils)
+    private final void shieldCollisionLogic(final Ship ship, final Debril[] debrils, final Debril[] prev_debrils, final float time)
     {
     	final float shield_x = ship.x;
     	final float shield_y = ship.y;
@@ -238,11 +246,16 @@ public class GameLoopThread extends Thread
 	            debril.dir_x = ndir_x;
 	            debril.dir_y = ndir_y;
 	            
-				debril.speed += Config.ACCEL_PER_LOGIC * 2;
-				if ( debril.speed > Config.MAX_SPEED_LOGIC )
-				{
-					debril.speed = Config.MAX_SPEED_LOGIC;
-				}
+//				debril.speed += Config.ACCEL_PER_SECOND;
+//				if ( debril.speed > Config.MAX_SPEED)
+//				{
+//					debril.speed = Config.MAX_SPEED;
+//				}
+//				debril.speed += Config.ACCEL_PER_LOGIC * 2;
+//				if ( debril.speed > Config.MAX_SPEED_LOGIC )
+//				{
+//				    debril.speed = Config.MAX_SPEED_LOGIC;
+//				}
 				
 				
 				// this moves the debril the "extra" that it has to move after
@@ -256,8 +269,9 @@ public class GameLoopThread extends Thread
 				}
 				else
 				{
-					debril.x += debril.dir_x * (debril.speed - Travel_dist);
-					debril.y += debril.dir_y * (debril.speed - Travel_dist);
+				    final float stime = debril.speed * time;
+					debril.x += debril.dir_x * (stime - Travel_dist);
+					debril.y += debril.dir_y * (stime - Travel_dist);
 				}
 				
 				ship.shield_active = true;
@@ -274,7 +288,7 @@ public class GameLoopThread extends Thread
     public void run()
     {
         int fps_count = 0;
-        long last_frame_start = System.currentTimeMillis();
+        long last_frame_start = System.nanoTime();
         long accumulator = -1;
         long fps_count_start_time = last_frame_start; // System.currentTimeMillis();
         long last_second_fps_count = 0;
@@ -282,79 +296,58 @@ public class GameLoopThread extends Thread
     	shipRect.set(0, 0, GameResources.shipMask.getWidth(), GameResources.shipMask.getHeight());
     	debrilRect.set(0, 0, GameResources.debrilMask.getWidth(), GameResources.debrilMask.getHeight());
     	
+    	final SurfaceHolder holder = view.getHolder();
     	while (running)
     	{
-    	    Canvas c = null;
-    		try
+    	    final Canvas c = holder.lockCanvas();
+    	    if ( c != null ) try
     		{
-    		    c = view.getHolder().lockCanvas();
-    		    if ( c != null )
-    		    {
-    		        
-//    		        synchronized (view.getHolder())
-//    		        {
-            		final long this_frame_start =  System.currentTimeMillis();
-            		if ( accumulator < 0 )
-            		{
-            		    last_frame_start = this_frame_start;
-            		    accumulator = 0;
-            		}
-            		
-            		final long fps_time = this_frame_start - fps_count_start_time;
-            		if ( fps_time >= 1000 )
-            		{
-            			last_second_fps_count = fps_count;
-            			fps_count_start_time = this_frame_start;
-            			fps_count = 0;
-            		}
-            		
-            		final long last_frame_time = this_frame_start - last_frame_start;
-            		accumulator += last_frame_time;
-            		int loopcount = 1;
-            		while ( ++loopcount < 105 && accumulator >= Config.DELAY_BETWEEN_LOGICS )
-            		{
-            		    doLogic();
-            		    accumulator -= Config.DELAY_BETWEEN_LOGICS;
-//            		accumulator %= DELAY_BETWEEN_LOGICS;
-            		}
-            		if ( accumulator < Config.DELAY_BETWEEN_LOGICS )
-            		{
-            		    interpol( 1f + (accumulator/(float)Config.DELAY_BETWEEN_LOGICS), last_frame_time );
-            		}
-            		else
-            		{
-            		    interpol( loopcount/-2f, last_frame_time );
-//            		    interpol( -1.0f, last_frame_time );
-            		}
-//            		interpol( accumulator/(float)Config.DELAY_BETWEEN_LOGICS, last_frame_time );
+        		final long this_frame_start =  System.nanoTime();
+        		if ( accumulator < 0 )
+        		{
+        		    last_frame_start = this_frame_start;
+        		    accumulator = 0;
+        		}
+        		
+        		final long fps_time = this_frame_start - fps_count_start_time;
+        		if ( fps_time >= 1000000000 ) // 1s in ns
+        		{
+        			last_second_fps_count = fps_count;
+        			fps_count_start_time = this_frame_start;
+        			fps_count = 0;
+        		}
+        		
+        		final long last_frame_time = this_frame_start - last_frame_start;
+        		
+        		final float lftime = last_frame_time / 1000000000f; // from ns to s
+//            		doLogic( lftime );
 //            		interpol( 1.0f, last_frame_time );
-            		
-//            		doLogic();
-            		interpol( 1.0f, Config.DELAY_BETWEEN_LOGICS );
-            		
-                    states.draw_state.last_fps = last_second_fps_count;
-            		
-					view.drawState(c, states.draw_state);
-//					view.drawMenu( c, states.draw_state );
-//    				} // synchronized()
-					++fps_count;
-					
-					last_frame_start = this_frame_start;
-    			}
+        		
+        		accumulator += last_frame_time;
+        		int loopcount = 0;
+        		while ( ++loopcount <= Config.MAX_LOGIC_LOOP && accumulator >= Config.DELAY_BETWEEN_LOGICS )
+        		{
+        		    doLogic( Config.LOGIC_FRAMETIME_S );
+        		    accumulator -= Config.DELAY_BETWEEN_LOGICS;
+        		}
+        		
+        		interpol(1.0f, lftime);
+
+        		states.draw_state.last_fps = last_second_fps_count;
+        		
+				view.drawState(c, states.draw_state);
+				++fps_count;
+				
+				last_frame_start = this_frame_start;
     		}
     		finally
     		{
-    			if (c != null)
-    			{
-    				view.getHolder().unlockCanvasAndPost(c);
-    			}
+    			holder.unlockCanvasAndPost(c);
     		}
-    		
-    		
     	}
     }
 	
-	final void doLogic()
+	final void doLogic(final float time)
 	{
 	    switch ( logicState )
         {
@@ -390,8 +383,8 @@ public class GameLoopThread extends Thread
                 }
                 else states.current.ship.shield_active = false;
                 
-                debrilMoveLogic(states.prev.debrils, states.current.debrils);
-                shieldCollisionLogic(states.current.ship, states.current.debrils, states.prev.debrils);
+                debrilMoveLogic(states.prev.debrils, states.current.debrils, time);
+                shieldCollisionLogic(states.current.ship, states.current.debrils, states.prev.debrils, time);
                 
                 if ( InputManager.wasPressed() )
                 {
@@ -413,7 +406,7 @@ public class GameLoopThread extends Thread
                     InputManager.getMoveCommand( moveCommand );
                     states.current.ship.dir_x = moveCommand.dir_x;
                     states.current.ship.dir_y = moveCommand.dir_y;
-                    states.current.ship.speed = moveCommand.speed;
+                    states.current.ship.speed = moveCommand.speed / time;
                 }
                 
                 ThrustParticleSystem.active = InputManager.wasPressed() || BackgroundStarsParticleSystem.time_rate < 1.0f ;
@@ -431,13 +424,13 @@ public class GameLoopThread extends Thread
                 }
                 else ship.shield_active = false;
                 
-                shipMoveLogic(states.prev.ship, ship);
+                shipMoveLogic(states.prev.ship, ship, time);
 
-                debrilMoveLogic(states.prev.debrils, states.current.debrils);
+                debrilMoveLogic(states.prev.debrils, states.current.debrils, time);
                 
                 if ( ship.shield )
                 {
-                    shieldCollisionLogic(ship, states.current.debrils, states.prev.debrils);
+                    shieldCollisionLogic(ship, states.current.debrils, states.prev.debrils, time);
                 }
 //                  else // enable "else" if ship explodes with shield (better find the logic error)
                 if ( shipCollisionLogic(ship, states.current.debrils) )
@@ -467,15 +460,15 @@ public class GameLoopThread extends Thread
                 final int e = debrils.length;
                 for ( int i = 0; i < e; i++ )
                 {
-                    debrils[i].max_speed = Config.REDUCED_SPEED_LOGIC;
-                    debrils[i].min_speed = Config.REDUCED_SPEED_LOGIC;
+                    debrils[i].max_speed = Config.REDUCED_SPEED;
+                    debrils[i].min_speed = Config.REDUCED_SPEED;
                     if ( debrils[i].speed > debrils[i].max_speed )
                     {
-                        debrils[i].acceleration = -Config.ACCEL_PER_LOGIC/4;
+                        debrils[i].acceleration = -Config.ACCEL_PER_SECOND/4;
                     }
                     else if ( debrils[i].speed < debrils[i].min_speed )
                     {
-                        debrils[i].acceleration = Config.ACCEL_PER_LOGIC/4;
+                        debrils[i].acceleration = Config.ACCEL_PER_SECOND/4;
                     }
                     else
                     {
@@ -515,7 +508,7 @@ public class GameLoopThread extends Thread
             case Death:
                 states.swapStates();
                 
-                debrilMoveLogic(states.prev.debrils, states.current.debrils);
+//                debrilMoveLogic(states.prev.debrils, states.current.debrils, time);
                 
 //              if ( st == GameState.Death && pressed )
                 if ( InputManager.wasPressed() )
@@ -527,7 +520,7 @@ public class GameLoopThread extends Thread
         }
 	}
 	
-	final void interpol(final float rate, final long last_frame_time)
+	final void interpol(final float rate, final float last_frame_time)
 	{
 	    final DrawState ds = states.draw_state;
 	    switch ( logicState )
@@ -537,6 +530,10 @@ public class GameLoopThread extends Thread
 	            states.interpolParticles(last_frame_time);
 	            
 	            ds.addLayer( states.backgroundStars );
+	            
+	            ds.addUI( GameResources.menu_play,   100, 200 );
+	            ds.addUI( GameResources.menu_config, 100, 350 );
+	            ds.addUI( GameResources.menu_exit,   100, 500 );
 	            
 	            break;
 	            
@@ -586,6 +583,7 @@ public class GameLoopThread extends Thread
                 ds.reset();
                 states.sprite_layer.reset();
                 
+                states.interpolShip(rate);
                 states.interpolDebrils(rate);
                 states.interpolParticles(last_frame_time);
                 
@@ -615,8 +613,10 @@ public class GameLoopThread extends Thread
     		d.dir_x = (float)Math.cos(dirangle);
     		d.dir_y = (float)Math.sin(dirangle);
 
-    		d.min_speed = Config.REDUCED_SPEED_LOGIC;
-    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
+    		d.min_speed = Config.REDUCED_SPEED;
+    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED/2) + Config.MAX_SPEED/2;
+//    		d.min_speed = Config.REDUCED_SPEED_LOGIC;
+//    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
     		if ( d.speed > d.max_speed )
     		{
     			// -ACCEL_PER_LOGIC was wrong, because it would slow down to minimum!
@@ -626,7 +626,8 @@ public class GameLoopThread extends Thread
     		}
     		else
     		{
-    			d.acceleration = Config.ACCEL_PER_LOGIC;
+    			d.acceleration = Config.ACCEL_PER_SECOND;
+//    			d.acceleration = Config.ACCEL_PER_LOGIC;
     		}
     	}
 	}
@@ -658,10 +659,15 @@ public class GameLoopThread extends Thread
     		d.dir_x = (float)Math.cos(dirangle);
     		d.dir_y = (float)Math.sin(dirangle);
     		
-    		d.min_speed = Config.REDUCED_SPEED_LOGIC;
-    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
+    		d.min_speed = Config.REDUCED_SPEED;
+    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED/2) + Config.MAX_SPEED/2;
     		d.speed = 0;
-    		d.acceleration = Config.ACCEL_PER_LOGIC;
+    		d.acceleration = Config.ACCEL_PER_SECOND;
+    		
+//    		d.min_speed = Config.REDUCED_SPEED_LOGIC;
+//    		d.max_speed = (float)Math.random()* (Config.MAX_SPEED_LOGIC/2) + Config.MAX_SPEED_LOGIC/2;
+//    		d.speed = 0;
+//    		d.acceleration = Config.ACCEL_PER_LOGIC;
     	}
     	
     	states.copyCurrentToPrev();

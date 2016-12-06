@@ -1,0 +1,242 @@
+dev.aaronps.traction.CollisionMask64 -> dev.aaronps.traction.a:
+    int bm_width -> a
+    int bm_height -> b
+    long[] mask -> c
+    void fromBitmap(android.graphics.Bitmap) -> a
+dev.aaronps.traction.Config -> dev.aaronps.traction.b:
+    android.graphics.RectF SHIP_MOVE_AREA -> a
+    float screen_x_ratio -> b
+    float screen_y_ratio -> c
+dev.aaronps.traction.Debril -> dev.aaronps.traction.c:
+    float x -> a
+    float y -> b
+    float dir_x -> c
+    float dir_y -> d
+    float speed -> e
+    float max_speed -> f
+    float min_speed -> g
+    float acceleration -> h
+dev.aaronps.traction.DrawState -> dev.aaronps.traction.d:
+    dev.aaronps.traction.Sprite[] topLayer -> a
+    int topLayerCount -> b
+    long alive_time -> c
+    long last_fps -> d
+    int MAX_GAME_LAYERS -> g
+    dev.aaronps.traction.gamelayers.GameLayer[] game_layers -> e
+    int game_layer_count -> f
+    void reset() -> a
+    void addLayer(dev.aaronps.traction.gamelayers.GameLayer) -> a
+    void addUI(android.graphics.Bitmap,float,float) -> a
+dev.aaronps.traction.GameLoopThread -> dev.aaronps.traction.e:
+    android.graphics.Rect shipRect -> a
+    android.graphics.Rect debrilRect -> b
+    android.graphics.Rect intersectRect -> c
+    dev.aaronps.traction.GameView view -> d
+    boolean running -> e
+    dev.aaronps.traction.States states -> f
+    dev.aaronps.traction.GameLoopThread$GameState logicState -> g
+    dev.aaronps.traction.InputManager$MoveCommand moveCommand -> h
+    int[] $SWITCH_TABLE$dev$aaronps$traction$GameLoopThread$GameState -> i
+    void setRunning(boolean) -> a
+    void debrilMoveLogic(dev.aaronps.traction.Debril[],dev.aaronps.traction.Debril[]) -> a
+    void shieldCollisionLogic(dev.aaronps.traction.Ship,dev.aaronps.traction.Debril[],dev.aaronps.traction.Debril[]) -> a
+    void run() -> run
+    void interpol(float,long) -> a
+    void configureSize$255f295() -> a
+    int[] $SWITCH_TABLE$dev$aaronps$traction$GameLoopThread$GameState() -> b
+dev.aaronps.traction.GameLoopThread$GameState -> dev.aaronps.traction.f:
+    dev.aaronps.traction.GameLoopThread$GameState MainMenu -> a
+    dev.aaronps.traction.GameLoopThread$GameState Init -> b
+    dev.aaronps.traction.GameLoopThread$GameState EnterStart -> c
+    dev.aaronps.traction.GameLoopThread$GameState ReadyToStart -> d
+    dev.aaronps.traction.GameLoopThread$GameState Game -> e
+    dev.aaronps.traction.GameLoopThread$GameState EnterDeath -> f
+    dev.aaronps.traction.GameLoopThread$GameState ReducingDeath -> g
+    dev.aaronps.traction.GameLoopThread$GameState Death -> h
+    dev.aaronps.traction.GameLoopThread$GameState[] ENUM$VALUES -> i
+    dev.aaronps.traction.GameLoopThread$GameState[] values() -> values
+    dev.aaronps.traction.GameLoopThread$GameState valueOf(java.lang.String) -> valueOf
+dev.aaronps.traction.GameResources -> dev.aaronps.traction.g:
+    android.graphics.Bitmap begin_message -> a
+    android.graphics.Bitmap death_message -> b
+    android.graphics.Bitmap numbers_24x32 -> c
+    android.graphics.Bitmap ship -> d
+    int ship_offset_x -> e
+    int ship_offset_y -> f
+    dev.aaronps.traction.CollisionMask64 shipMask -> g
+    android.graphics.Bitmap ship_aura -> h
+    android.graphics.Bitmap ship_aura_active -> i
+    int ship_aura_offset_x -> j
+    int ship_aura_offset_y -> k
+    android.graphics.Bitmap debril -> l
+    int debril_offset_x -> m
+    int debril_offset_y -> n
+    dev.aaronps.traction.CollisionMask64 debrilMask -> o
+    android.graphics.Bitmap explosion -> p
+    int shieldHitSound -> q
+    int explosionSound -> r
+    android.graphics.Bitmap yepart -> s
+    void loadResources(android.content.res.AssetManager) -> a
+dev.aaronps.traction.GameView -> dev.aaronps.traction.h:
+    android.view.SurfaceHolder holder -> a
+    dev.aaronps.traction.GameLoopThread gameLoopThread -> b
+    boolean configured -> c
+    android.graphics.Matrix viewMatrix -> d
+    android.graphics.Matrix uiMatrix -> e
+    int[] static_decimals -> f
+    int[] static_inte -> g
+    int NUMBER_WIDTH -> h
+    int NUMBER_HEIGHT -> i
+    int DOT_WIDTH -> j
+    android.graphics.Rect number_src -> k
+    android.graphics.Rect number_dst -> l
+    int surf_width -> m
+    int surf_height -> n
+    int virtual_width -> o
+    android.content.Context ctx -> p
+    android.graphics.Paint button_bg_paint -> q
+    boolean onTouchEvent(android.view.MotionEvent) -> onTouchEvent
+    void drawState(android.graphics.Canvas,dev.aaronps.traction.DrawState) -> a
+dev.aaronps.traction.GameView$1 -> dev.aaronps.traction.i:
+    dev.aaronps.traction.GameView this$0 -> a
+    void surfaceDestroyed(android.view.SurfaceHolder) -> surfaceDestroyed
+    void surfaceCreated(android.view.SurfaceHolder) -> surfaceCreated
+    void surfaceChanged(android.view.SurfaceHolder,int,int,int) -> surfaceChanged
+dev.aaronps.traction.InputManager -> dev.aaronps.traction.j:
+    int working_mode -> a
+    float joystick_x -> b
+    float joystick_y -> c
+    float pointer_x -> d
+    float pointer_y -> e
+    float speed -> f
+    boolean pressed -> g
+    void pointerPress(float,float) -> a
+    void pointerRelease$2548a35() -> a
+    void resetPress() -> b
+    boolean wasPressed() -> c
+    void pointerMove(float,float) -> b
+    void getMoveCommand(dev.aaronps.traction.InputManager$MoveCommand) -> a
+dev.aaronps.traction.InputManager$MoveCommand -> dev.aaronps.traction.k:
+    float dir_x -> a
+    float dir_y -> b
+    float speed -> c
+dev.aaronps.traction.Main -> dev.aaronps.traction.Main:
+    void onCreate(android.os.Bundle) -> onCreate
+dev.aaronps.traction.Ship -> dev.aaronps.traction.l:
+    float x -> a
+    float y -> b
+    float dir_x -> c
+    float dir_y -> d
+    float speed -> e
+    boolean shield -> f
+    boolean shield_active -> g
+    int shield_counter -> h
+dev.aaronps.traction.SoundManager -> dev.aaronps.traction.m:
+    dev.aaronps.traction.SoundManager$NoSoundPlayer nosound_player -> b
+    dev.aaronps.traction.SoundManager$NormalPlayer normal_player -> c
+    dev.aaronps.traction.SoundManager$Player player -> a
+    boolean init(android.content.Context) -> a
+    void deinit() -> a
+dev.aaronps.traction.SoundManager$NoSoundPlayer -> dev.aaronps.traction.n:
+    void play(int) -> a
+    void deactivate() -> a
+dev.aaronps.traction.SoundManager$NormalPlayer -> dev.aaronps.traction.o:
+    android.media.SoundPool soundPool -> a
+    void deactivate() -> a
+    boolean load(android.content.Context) -> a
+    void play(int) -> a
+dev.aaronps.traction.SoundManager$Player -> dev.aaronps.traction.p:
+    void play(int) -> a
+    void deactivate() -> a
+dev.aaronps.traction.Sprite -> dev.aaronps.traction.q:
+    android.graphics.Bitmap image -> a
+    float x -> b
+    float y -> c
+dev.aaronps.traction.State -> dev.aaronps.traction.r:
+    dev.aaronps.traction.Debril[] debrils -> a
+    int count -> b
+    dev.aaronps.traction.Ship ship -> c
+dev.aaronps.traction.States -> dev.aaronps.traction.s:
+    dev.aaronps.traction.State prev -> a
+    dev.aaronps.traction.State current -> b
+    dev.aaronps.traction.DrawState draw_state -> c
+    dev.aaronps.traction.gamelayers.SpriteLayer sprite_layer -> d
+    dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem backgroundStars -> e
+    dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem explosions -> f
+    dev.aaronps.traction.gamelayers.SparkParticleSystem sparks -> g
+    dev.aaronps.traction.gamelayers.ThrustParticleSystem thrustParticles -> h
+    void swapStates() -> a
+    void interpolShip(float) -> a
+    void interpolDebrils(float) -> b
+    void interpolParticles(long) -> a
+    void resetShip() -> b
+dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem -> dev.aaronps.traction.a.a:
+    float[] ppoints -> a
+    float[] pspeeds -> b
+    int particle_count -> c
+    android.graphics.Paint[] starPaint -> d
+    java.util.Random rnd -> e
+    boolean slowmo -> f
+    float time_rate -> g
+    void logic(float) -> a
+    void draw(android.graphics.Canvas) -> a
+dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem -> dev.aaronps.traction.a.b:
+    android.graphics.Rect size_rect -> a
+    dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem$BitmapExplosionParticle[] particles -> b
+    int particle_count -> c
+    void logic(float) -> a
+    void draw(android.graphics.Canvas) -> a
+    void add(int,int,float,float,float) -> a
+dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem$BitmapExplosionParticle -> dev.aaronps.traction.a.c:
+    android.graphics.Rect frame -> a
+    android.graphics.Rect pos -> b
+    float frame_time -> c
+    float dir_x -> d
+    float dir_y -> e
+    float speed -> f
+dev.aaronps.traction.gamelayers.GameLayer -> dev.aaronps.traction.a.d:
+    void draw(android.graphics.Canvas) -> a
+dev.aaronps.traction.gamelayers.SparkParticleSystem -> dev.aaronps.traction.a.e:
+    dev.aaronps.traction.gamelayers.SparkParticleSystem$SparkParticle[] particles -> a
+    int particle_count -> b
+    android.graphics.Paint sparkPaint -> c
+    java.util.Random rnd -> d
+    android.graphics.RectF drect -> e
+    void logic(float) -> a
+    void draw(android.graphics.Canvas) -> a
+    void addSpark(float,float,float,float) -> a
+dev.aaronps.traction.gamelayers.SparkParticleSystem$SparkParticle -> dev.aaronps.traction.a.f:
+    float x -> a
+    float y -> b
+    float dir_x -> c
+    float dir_y -> d
+    float speed -> e
+    float total_alivetime -> f
+    float alivetime -> g
+dev.aaronps.traction.gamelayers.SpriteLayer -> dev.aaronps.traction.a.g:
+    dev.aaronps.traction.Sprite[] sprites -> a
+    int sprite_count -> b
+    void add(android.graphics.Bitmap,float,float) -> a
+    void draw(android.graphics.Canvas) -> a
+dev.aaronps.traction.gamelayers.ThrustParticleSystem -> dev.aaronps.traction.a.h:
+    dev.aaronps.traction.gamelayers.ThrustParticleSystem$ThrustParticle[] particles -> a
+    int particle_count -> b
+    android.graphics.Paint thrustPaint -> c
+    boolean active -> d
+    float ship_x -> e
+    float ship_y -> f
+    double[] rnd_double -> g
+    int cur_double -> h
+    float[] rnd_float -> i
+    int cur_float -> j
+    void logic(float) -> a
+    void draw(android.graphics.Canvas) -> a
+    void setShipLocation(float,float) -> a
+dev.aaronps.traction.gamelayers.ThrustParticleSystem$ThrustParticle -> dev.aaronps.traction.a.i:
+    float x -> a
+    float y -> b
+    float dir_x -> c
+    float dir_y -> d
+    float speed -> e
+    float total_alivetime -> f
+    float alivetime -> g

@@ -1,0 +1,96 @@
+android.annotation.SuppressLint
+android.annotation.TargetApi
+dev.aaronps.traction.BuildConfig
+dev.aaronps.traction.Config:
+    public static final long LPS
+    public static final long DELAY_BETWEEN_LOGICS
+    public static final float ACCEL_PER_SECOND
+    public static final float ACCEL_PER_LOGIC
+    public static final float MAX_SPEED
+    public static final float MAX_SPEED_LOGIC
+    public static final float REDUCED_SPEED
+    public static final float REDUCED_SPEED_LOGIC
+    public static final float WORLD_MIN_X
+    public static final float WORLD_MIN_Y
+    public static final float WORLD_MAX_X
+    public static final float WORLD_MAX_Y
+    public static final int MAX_DEBRIL_COUNT
+    public static final float SHIELD_RADII
+    public static final float DEBRIL_RADII
+    public static final float COMBINED_RADII
+    public static final float COMBINED_RADII_SQ
+    public static final float POINTER_MOVE_RATIO
+    public static final float JOYSTICK_MIN_DISTANCE
+    public static final float JOYSTICK_MAX_DISTANCE
+    public static final float JOYSTICK_MAX_SPEED
+    5:5:public Config()
+dev.aaronps.traction.GameResources:
+    10:10:public GameResources()
+dev.aaronps.traction.GameView:
+    154:168:final void drawMenu(android.graphics.Canvas,dev.aaronps.traction.DrawState)
+dev.aaronps.traction.InputManager:
+    3:3:public InputManager()
+    28:30:public static void setNormalMode()
+    34:36:public static void setJoystickMode()
+dev.aaronps.traction.ParticleSystem
+dev.aaronps.traction.R
+dev.aaronps.traction.R$attr
+dev.aaronps.traction.R$dimen
+dev.aaronps.traction.R$drawable
+dev.aaronps.traction.R$id
+dev.aaronps.traction.R$layout
+dev.aaronps.traction.R$menu
+dev.aaronps.traction.R$string
+dev.aaronps.traction.R$style
+dev.aaronps.traction.SoundManager:
+    10:10:public SoundManager()
+dev.aaronps.traction.SoundManager$NoSoundPlayer:
+    28:28:public boolean activate()
+    30:30:public boolean load(android.content.Context)
+dev.aaronps.traction.SoundManager$Player:
+    public abstract boolean activate()
+    public abstract boolean load(android.content.Context)
+dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem:
+    static final float min_x
+    static final float min_y
+    static final float max_x
+    static final float max_y
+    static final float x_size
+    static final float y_size
+    static final float MAX_SPEED
+    static final float MIN_SPEED
+    static final float RND_SPEED
+    static final int MAX_PARTICLES
+    private static final float time_accel_rate
+    private static final float slowmo_time_rate
+dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem:
+    static final int frame_w
+    static final int frame_h
+    static final int image_w
+    static final int image_h
+    static final float time_per_frame
+    static final int MAX_PARTICLES
+dev.aaronps.traction.gamelayers.SparkParticleSystem:
+    static final double HALFPI
+    static final float MAX_ALIVE
+    static final float MIN_ALIVE
+    static final float RND_ALIVE
+    static final float MAX_SPEED
+    static final float MIN_SPEED
+    static final float RND_SPEED
+    static final int MAX_PARTICLES
+dev.aaronps.traction.gamelayers.ThrustParticleSystem:
+    static final float MAX_ALIVE
+    static final float MIN_ALIVE
+    static final float RND_ALIVE
+    static final float MAX_SPEED
+    static final float MIN_SPEED
+    static final float RND_SPEED
+    private static final float PARTICLES_PER_THRUST_PER_SECOND
+    static final int MAX_PARTICLES
+    private static final double anglebase
+    private static final double outangle
+    private static final int MAX_DOUBLES
+    private static final int DOUBLE_MASK
+    private static final int MAX_FLOATS
+    private static final int FLOAT_MASK

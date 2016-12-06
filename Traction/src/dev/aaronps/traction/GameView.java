@@ -2,23 +2,18 @@ package dev.aaronps.traction;
 
 import java.io.IOException;
 
-import dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem;
-import dev.aaronps.traction.gamelayers.GameLayer;
-import dev.aaronps.traction.gamelayers.SparkParticleSystem;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Rect;
-import android.media.AudioManager;
-import android.media.SoundPool;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import dev.aaronps.traction.gamelayers.GameLayer;
 
 public class GameView extends SurfaceView
 {
@@ -49,17 +44,10 @@ public class GameView extends SurfaceView
     
     Context ctx = null;
     
-    Paint button_bg_paint = null;
-    
 	public GameView(Context context)
 	{
 		super(context);
 		ctx = context;
-		
-		button_bg_paint = new Paint();
-//		button_bg_paint.setColor( 0x8000a2ff );
-//		button_bg_paint.setColor( 0x8023a0e7 );
-		button_bg_paint.setColor( 0x80dddddd );
 		
 		gameLoopThread = new GameLoopThread(this);
 		holder = getHolder();
@@ -134,14 +122,50 @@ public class GameView extends SurfaceView
 
 	}
 	
+	int pressing_id = -1;
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent e)
 	{
-	    switch (e.getAction())
+	    final int a = e.getAction();
+	    final int action = a & MotionEvent.ACTION_MASK;
+	    final int pointer_index = (a & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+	    final int pointer_id = e.getPointerId( pointer_index );
+	    
+	    switch ( action )
 	    {
-	    	case MotionEvent.ACTION_DOWN: InputManager.pointerPress( e.getX(), e.getY() );   break;
-	    	case MotionEvent.ACTION_MOVE: InputManager.pointerMove( e.getX(), e.getY() );    break;
-	    	case MotionEvent.ACTION_UP:   InputManager.pointerRelease( e.getX(), e.getY() ); break;
+	    	case MotionEvent.ACTION_DOWN:
+	    	case MotionEvent.ACTION_POINTER_DOWN:
+	    	    if ( pressing_id == -1 )
+	    	    {
+	    	        pressing_id = pointer_id;
+	    	        InputManager.pointerPress( e.getX(), e.getY() );
+	    	    }
+	    	    break;
+	    	    
+	    	case MotionEvent.ACTION_UP:
+	    	case MotionEvent.ACTION_POINTER_UP:
+	    	case MotionEvent.ACTION_CANCEL: //doc says not do anything on cancel
+	    	    if ( pressing_id == pointer_id )
+	    	    {
+	    	        pressing_id = -1;
+	    	        InputManager.pointerRelease( e.getX(), e.getY() );
+	    	    }
+	    	    break;
+	    	    
+	    	case MotionEvent.ACTION_MOVE:
+	    	    if ( pressing_id != -1 )
+	    	    {
+	    	        final int c = e.getPointerCount();
+	    	        for ( int n = 0; n < c; n++ )
+	    	        {
+	    	            if ( e.getPointerId( n ) == pressing_id )
+	    	            {
+	    	                InputManager.pointerMove( e.getX(n), e.getY(n) );
+	    	            }
+	    	        }
+	    	    }
+	    	    break;
 	    		
 	    	default: return false;
 	    }
@@ -149,7 +173,24 @@ public class GameView extends SurfaceView
 		return true;
 	}
 	
-	final void drawMenu(final Canvas canvas, final DrawState state)
+	
+	@Override
+    public boolean onKeyDown( int keyCode, KeyEvent event)
+    {
+        // TODO Auto-generated method stub
+        return super.onKeyDown( keyCode, event );
+    }
+
+
+    @Override
+    public boolean onKeyUp( int keyCode, KeyEvent event)
+    {
+        // TODO Auto-generated method stub
+        return super.onKeyUp( keyCode, event );
+    }
+
+
+    final void drawMenu(final Canvas canvas, final DrawState state)
 	{
 	    canvas.drawColor(Color.BLACK);
 	    
@@ -164,7 +205,16 @@ public class GameView extends SurfaceView
 	    
 	    canvas.setMatrix( uiMatrix );
 	    
-	    canvas.drawRect( 100, 100, 380, 200, button_bg_paint);
+	    if ( state.topLayerCount > 0 )
+        {
+            final int tc = state.topLayerCount;
+            final Sprite[] ts = state.topLayer;
+            for ( int n = 0; n < tc; n++ )
+            {
+                final Sprite s = ts[n];
+                canvas.drawBitmap(s.image, s.x, s.y, null);
+            }
+        }
 	}
 	
     final void drawState(final Canvas canvas, final DrawState state)
@@ -198,7 +248,7 @@ public class GameView extends SurfaceView
 			final int[] inte = static_inte;
 			
 			int maxinte = 0;
-			int tmp = (int)state.alive_time;
+			int tmp = (int)(state.alive_time / 1000000); // from ns to ms
 	        
 	        decimals[2] = tmp%10; tmp/=10;
 	        decimals[1] = tmp%10; tmp/=10;

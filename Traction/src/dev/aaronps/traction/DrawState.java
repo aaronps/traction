@@ -1,14 +1,11 @@
 package dev.aaronps.traction;
 
-import dev.aaronps.traction.gamelayers.BackgroundStarsParticleSystem;
-import dev.aaronps.traction.gamelayers.BitmapExplosionParticleSystem;
-import dev.aaronps.traction.gamelayers.GameLayer;
-import dev.aaronps.traction.gamelayers.SparkParticleSystem;
-import dev.aaronps.traction.gamelayers.ThrustParticleSystem;
 import android.graphics.Bitmap;
+import dev.aaronps.traction.gamelayers.GameLayer;
 
 public class DrawState
 {
+    public static final int TOP_LAYER_MAX_SPRITES = 5;
 	public Sprite[] topLayer;
 	public int topLayerCount;
 	
@@ -26,8 +23,8 @@ public class DrawState
 	    game_layer_count = 0;
 	    
 		topLayerCount = 0;
-		topLayer = new Sprite[5];
-		for ( int n = 0; n < 5; n++ )
+		topLayer = new Sprite[TOP_LAYER_MAX_SPRITES];
+		for ( int n = 0; n < TOP_LAYER_MAX_SPRITES; n++ )
 		{
 			topLayer[n] = new Sprite();
 		}

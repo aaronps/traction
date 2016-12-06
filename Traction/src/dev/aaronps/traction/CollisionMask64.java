@@ -35,7 +35,7 @@ public class CollisionMask64
 			long m = 1L << 63;
 			for ( int x = 0; x < bm_width; x++ )
 			{
-				if ( Color.alpha(bitmap.getPixel(x, y)) > 0 )
+				if ( Color.alpha(bitmap.getPixel(x, y)) > 31 )
 				{
 					mask[y] |= m;
 				}

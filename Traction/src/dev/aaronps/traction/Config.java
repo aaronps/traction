@@ -36,7 +36,9 @@ public class Config
 
     
     public static final long LPS = 60;
-    public static final long DELAY_BETWEEN_LOGICS = 17; //1000/LPS;
+    public static final long DELAY_BETWEEN_LOGICS = 16500000; // in ns //1000/LPS;
+    public static final int  MAX_LOGIC_LOOP = 3;
+    public static final float LOGIC_FRAMETIME_S =  DELAY_BETWEEN_LOGICS / 1000000000f;
     public static final float ACCEL_PER_SECOND = 25.0f;
     public static final float ACCEL_PER_LOGIC = ACCEL_PER_SECOND / LPS;
     public static final float MAX_SPEED = 240f;
@@ -66,5 +68,10 @@ public class Config
     
     public static float screen_x_ratio = 1f;
     public static float screen_y_ratio = 1f;
+    
+    public static final int MENU_BUTTON_WIDTH = 280;
+    public static final int MENU_BUTTON_HEIGHT = 100;
+    public static final int MENU_BUTTON_TEXT_SIZE = 80;
+    public static final int MENU_BUTTON_BACKGROUND = 0x80dddddd;
     
 }
