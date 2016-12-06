@@ -1,20 +1,42 @@
 package dev.aaronps.traction;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.Window;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.view.SurfaceView;
+import dev.aaronps.gameengine.GameActivity;
+import dev.aaronps.gameengine.Screen;
+import dev.aaronps.traction.screens.Screens;
 
-public class Main extends Activity {
+public class Main extends GameActivity
+{
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-//		getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//		                      WindowManager.LayoutParams.FLAG_FULLSCREEN );
-		
-		setContentView(new GameView(this));
-	}
+    @Override
+    public Screen getInitialScreen()
+    {
+        Screens.MENU_MAIN.ctx = this;
+        return Screens.MENU_MAIN;
+    }
+    
+    @Override
+    public SurfaceView getView(final Context context)
+    {
+        return null;
+    }
 
+    @Override
+    public void loadSettings(final SharedPreferences prefs)
+    {
+        InputManager.working_mode = prefs.getInt("control_mode", 0);
+    }
+
+    @Override
+    public void saveSettings(SharedPreferences prefs)
+    {
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.putInt("control_mode", InputManager.working_mode);
+        
+        editor.commit();
+    }
+    
 }

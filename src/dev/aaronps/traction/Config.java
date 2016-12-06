@@ -37,19 +37,30 @@ public class Config
     
     public static final long LPS = 60;
     public static final long DELAY_BETWEEN_LOGICS = 16500000; // in ns //1000/LPS;
+//    public static final long LPS = 25;
+//    public static final long DELAY_BETWEEN_LOGICS = 40000000; // in ns //1000/LPS;
     public static final int  MAX_LOGIC_LOOP = 3;
     public static final float LOGIC_FRAMETIME_S =  DELAY_BETWEEN_LOGICS / 1000000000f;
-    public static final float ACCEL_PER_SECOND = 25.0f;
-    public static final float ACCEL_PER_LOGIC = ACCEL_PER_SECOND / LPS;
     public static final float MAX_SPEED = 240f;
     public static final float MAX_SPEED_LOGIC = MAX_SPEED / LPS;
+    public static final float ACCEL_PER_SECOND = MAX_SPEED*2;
+    public static final float ACCEL_PER_LOGIC = ACCEL_PER_SECOND / LPS;
     public static final float REDUCED_SPEED = 15f;
     public static final float REDUCED_SPEED_LOGIC = REDUCED_SPEED / LPS;
         
+//    public static final float WORLD_MIN_X = -200f;
+//    public static final float WORLD_MIN_Y = -200f;
+//    public static final float WORLD_MAX_X = 200f;
+//    public static final float WORLD_MAX_Y = 200f;
     public static final float WORLD_MIN_X = -350f;
     public static final float WORLD_MIN_Y = -450f;
     public static final float WORLD_MAX_X = 350f;
     public static final float WORLD_MAX_Y = 450f;
+    public static final float WORLD_SIZE_X = WORLD_MAX_X - WORLD_MIN_X;
+    public static final float WORLD_SIZE_Y = WORLD_MAX_Y - WORLD_MIN_Y;
+    
+    public static final float DEBRIL_ATTACK_RAD = 75;
+    public static final float DEBRIL_ATTACK_DIA = DEBRIL_ATTACK_RAD * 2;
     
     public static final RectF SHIP_MOVE_AREA = new RectF( -225f, -300f, 225f, 300f);
 
@@ -73,5 +84,8 @@ public class Config
     public static final int MENU_BUTTON_HEIGHT = 100;
     public static final int MENU_BUTTON_TEXT_SIZE = 80;
     public static final int MENU_BUTTON_BACKGROUND = 0x80dddddd;
+    public static final int MENU_BUTTON_SELECTED   = 0x8011dd22;
+    
+    public static final int MAX_DEBRILS = 30;
     
 }
