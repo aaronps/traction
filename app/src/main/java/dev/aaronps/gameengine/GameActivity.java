@@ -166,17 +166,12 @@ public abstract class GameActivity
 
                 Res.fps_number.value = (int)last_second_fps_count;
 
-                c.drawColor(Color.BLUE);
-                Paint p = new Paint();
-                p.setColor(Color.BLUE);
-                c.drawRect(0, 0, 100, 100, p);
+                c.drawColor(Color.BLACK);
+                c.setMatrix(viewMatrix);
+                current_screen.drawGame(c);
                 
-//                c.drawColor(Color.BLACK);
-//                c.setMatrix(viewMatrix);
-//                current_screen.drawGame(c);
-                
-//                c.setMatrix(uiMatrix);
-//                current_screen.drawUI(c);
+                c.setMatrix(uiMatrix);
+                current_screen.drawUI(c);
 
                 ++fps_count;
                 last_frame_start = frame_start;
@@ -212,10 +207,10 @@ public abstract class GameActivity
         Config.screen_x_ratio = x_ratio;
         Config.screen_y_ratio = x_ratio;
 
-//        viewMatrix.setScale(x_ratio, x_ratio);
+        viewMatrix.setScale(x_ratio, x_ratio);
 //        viewMatrix.setScale(1, 1);
         uiMatrix.set(viewMatrix);
-//        viewMatrix.postTranslate(width / 2, height / 2);
+        viewMatrix.postTranslate(width / 2, height / 2);
         
         System.gc();
         
